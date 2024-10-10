@@ -7,4 +7,4 @@
 <img src="docs/Flowchart.png">
 
 # 3. Sequence Diagram
-<img src="docs/sequence_diagram.png">
+<img src="docs/sequence-diagram.png">
