@@ -16,3 +16,11 @@ spring:
     properties:
       hibernate:
         show_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    operationsSorter: method
