@@ -23,14 +23,14 @@ public class ConcertService {
 	private final ConcertSeatRepository concertSeatRepository;
 
 	public List<ConcertSchedule> scanAllBookableConcertSchedules(String token, Long concertId) {
-		Long userId = tokenService.getUserId(token);
+		Long userId = tokenService.getUserIdByWaitingToken(token);
 		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(UnableToRetrieveConcertSchedule::new);
 
 		return concertScheduleRepository.findAllBookableSchedulesByConcertId(concertId);
 	}
 
 	public List<ConcertSeat> scanAllSeats(String token, Long concertScheduleId) {
-		Long userId = tokenService.getUserId(token);
+		Long userId = tokenService.getUserIdByWaitingToken(token);
 		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(UnableToRetrieveConcertSeat::new);
 
 		return concertSeatRepository.findAllByConcertScheduleId(concertScheduleId);

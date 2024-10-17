@@ -60,7 +60,7 @@ class ConcertServiceUnitTest {
 				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now())
 			);
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(concertScheduleRepository.findAllBookableSchedulesByConcertId(anyLong())).thenReturn(givenConcertSchedules);
 
@@ -90,7 +90,7 @@ class ConcertServiceUnitTest {
 		Long givenUserId = 1L;
 		String givenJwtToken = "testToken";
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
@@ -120,7 +120,7 @@ class ConcertServiceUnitTest {
 			new ConcertSeat(3L, givenConcert, givenConcertSchedule, 3, 1000, false, LocalDateTime.now(), LocalDateTime.now())
 		);
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(concertSeatRepository.findAllByConcertScheduleId(anyLong())).thenReturn(givenConcertSeats);
 
@@ -151,7 +151,7 @@ class ConcertServiceUnitTest {
 		Long givenUserId = 1L;
 		String givenJwtToken = "testToken";
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when

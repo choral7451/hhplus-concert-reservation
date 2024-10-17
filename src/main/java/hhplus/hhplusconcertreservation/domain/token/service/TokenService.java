@@ -16,11 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class TokenService {
-	@Value("${variables.secretKey}")
-	private String secretKey;
+	@Value("${variables.waitingTokenSecretKey}")
+	private String waitingTokenSecretKey;
 
-	public String issueToken(Long userId) {
-		SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+	public String issueWaitingToken(Long userId) {
+		SecretKey key = Keys.hmacShaKeyFor(waitingTokenSecretKey.getBytes());
 
 		return Jwts.builder()
 			.claim("userId", userId)
@@ -28,9 +28,9 @@ public class TokenService {
 			.compact();
 	}
 
-	public Long getUserId(String token) {
+	public Long getUserIdByWaitingToken(String token) {
 		try {
-			SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+			SecretKey key = Keys.hmacShaKeyFor(waitingTokenSecretKey.getBytes());
 
 			Claims claims = Jwts.parserBuilder()
 				.setSigningKey(key)

@@ -22,10 +22,10 @@ class TokenServiceUnitTest {
 	@Test
 	public void 토큰_발행() {
 		// given
-		ReflectionTestUtils.setField(tokenService, "secretKey", "mySuperSecretKeyForJwtSigningWhichIsLongEnoughTest");
+		ReflectionTestUtils.setField(tokenService, "waitingTokenSecretKey", "mySuperSecretKeyForJwtSigningWhichIsLongEnoughTest");
 
 		// when & then
-		assertNotNull(tokenService.issueToken(1L));
+		assertNotNull(tokenService.issueWaitingToken(1L));
 	}
 
 	@Test
@@ -40,10 +40,10 @@ class TokenServiceUnitTest {
 			.signWith(key)
 			.compact();
 
-		ReflectionTestUtils.setField(tokenService, "secretKey", givenSecretKey);
+		ReflectionTestUtils.setField(tokenService, "waitingTokenSecretKey", givenSecretKey);
 
 		// when
-		Long userId = tokenService.getUserId(givenToken);
+		Long userId = tokenService.getUserIdByWaitingToken(givenToken);
 
 		// then
 		assertEquals(givenUserId, userId);
@@ -56,7 +56,7 @@ class TokenServiceUnitTest {
 
 		// when
 		InvalidToken exception = assertThrows(InvalidToken.class, () -> {
-			tokenService.getUserId(givenInvalidToken);
+			tokenService.getUserIdByWaitingToken(givenInvalidToken);
 		});
 
 		// then

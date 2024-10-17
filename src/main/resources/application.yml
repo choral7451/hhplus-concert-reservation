@@ -18,4 +18,5 @@ spring:
         show_sql: true
 
 variables:
-  secretKey: "mySuperSecretKeyForJwtSigningWhichIsLongEnough1234"
+  waitingTokenSecretKey: "mySuperSecretKeyForJwtSigningWhichIsLongEnough1234"
+  authTokenSecretKey: "authMySuperSecretKeyForJwtSigningWhichIsLongEnough"

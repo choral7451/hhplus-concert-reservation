@@ -20,7 +20,7 @@ public class ConcertController {
 	private final ConcertService concertService;
 
 	@GetMapping("/{concertId}/schedules")
-	public List<ConcertScheduleResponse> concertSchedules(@RequestHeader("Authorization") String token, @PathVariable Long concertId) {
+	public List<ConcertScheduleResponse> concertSchedules(@RequestHeader("waitingToken") String token, @PathVariable Long concertId) {
 		String jwtToken = token.replace("Bearer ", "");
 
 		return concertService.scanAllBookableConcertSchedules(jwtToken, concertId)
@@ -34,7 +34,7 @@ public class ConcertController {
 	}
 
 	@GetMapping("/schedules/{scheduleId}/seats")
-	public List<ConcertSeatsResponse> concertScheduleSeats(@RequestHeader("Authorization") String token, @PathVariable Long scheduleId) {
+	public List<ConcertSeatsResponse> concertScheduleSeats(@RequestHeader("waitingToken") String token, @PathVariable Long scheduleId) {
 		String jwtToken = token.replace("Bearer ", "");
 
 		return concertService.scanAllSeats(jwtToken, scheduleId)

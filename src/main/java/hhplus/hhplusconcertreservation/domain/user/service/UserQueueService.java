@@ -24,13 +24,13 @@ public class UserQueueService {
 			.orElseThrow(UserNotFound::new);
 
 		UserQueue userQueue = userQueueRepository.findByUserId(userId)
-			.orElseGet(() -> userQueueRepository.save(userId, tokenService.issueToken(userId)));
+			.orElseGet(() -> userQueueRepository.save(userId, tokenService.issueWaitingToken(userId)));
 
 		return userQueue.getToken();
 	}
 
 	public UserQueue scanUserQueue(String jwtToken) {
-		Long userId = tokenService.getUserId(jwtToken);
+		Long userId = tokenService.getUserIdByWaitingToken(jwtToken);
 
 		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(UserQueueNotFound::new);
 

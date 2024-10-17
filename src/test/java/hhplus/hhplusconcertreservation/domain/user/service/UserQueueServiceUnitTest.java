@@ -50,7 +50,7 @@ class UserQueueServiceUnitTest {
 
 		assertEquals(givenUserQueue.getToken(), token);
 
-		verify(tokenService, never()).issueToken(anyLong());
+		verify(tokenService, never()).issueWaitingToken(anyLong());
 		verify(userQueueRepository, never()).save(anyLong(), anyString());
 	}
 
@@ -62,7 +62,7 @@ class UserQueueServiceUnitTest {
 
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
-		when(tokenService.issueToken(anyLong())).thenReturn(givenUserQueue.getToken());
+		when(tokenService.issueWaitingToken(anyLong())).thenReturn(givenUserQueue.getToken());
 		when(userQueueRepository.save(anyLong(), anyString())).thenReturn(givenUserQueue);
 
 		// when
@@ -85,7 +85,7 @@ class UserQueueServiceUnitTest {
 
 		verify(userQueueRepository, never()).findByUserId(anyLong());
 		verify(userQueueRepository, never()).save(anyLong(), anyString());
-		verify(tokenService, never()).issueToken(anyLong());
+		verify(tokenService, never()).issueWaitingToken(anyLong());
 	}
 
 	@Test
@@ -96,7 +96,7 @@ class UserQueueServiceUnitTest {
 		int givenOrder = 1;
 		UserQueue givenUserQueue = new UserQueue(givenUserId, givenToken);
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(userQueueRepository.countCurrentOrderByUserId(anyLong())).thenReturn(givenOrder);
 
@@ -116,7 +116,7 @@ class UserQueueServiceUnitTest {
 		String givenToken = "testToken";
 		int givenOrder = 1;
 
-		when(tokenService.getUserId(anyString())).thenReturn(givenUserId);
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
