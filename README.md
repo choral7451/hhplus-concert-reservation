@@ -8,3 +8,15 @@
 
 # 3. Sequence Diagram
 <img src="docs/sequence-diagram.png">
+
+# 4. ERD
+<img src="docs/erd.png">
+
+# 5. API - DOCS
+<img src="docs/api-docs.png">
+
+# 6. 기술 스택
+- Springboot
+- JPA
+- PostgreSQL
+- Swagger
