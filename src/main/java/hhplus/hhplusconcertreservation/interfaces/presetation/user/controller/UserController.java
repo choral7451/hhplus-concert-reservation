@@ -1,7 +1,5 @@
 package hhplus.hhplusconcertreservation.interfaces.presetation.user.controller;
 
-import javax.crypto.SecretKey;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,9 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import hhplus.hhplusconcertreservation.domain.user.service.UserQueueService;
 import hhplus.hhplusconcertreservation.interfaces.presetation.user.dto.request.CreateUserQueueRequest;
 import hhplus.hhplusconcertreservation.interfaces.presetation.user.dto.response.UserQueueResponse;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @RestController

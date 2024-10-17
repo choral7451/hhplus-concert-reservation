@@ -12,4 +12,7 @@ public interface UserQueueJpaRepository extends JpaRepository<UserQueueEntity, L
 	Optional<UserQueueEntity> findByUserId(Long userId);
 	@Query("SELECT COUNT(u) FROM UserQueueEntity u WHERE u.status = 'WAITING' AND u.id <= (SELECT u2.id FROM UserQueueEntity u2 WHERE u2.userId = :userId)")
 	int countCurrentOrderByUserId(@Param("userId") Long userId);
+
+	@Query("SELECT u FROM UserQueueEntity u WHERE u.userId = :userId AND u.status = 'ACTIVATION' AND u.expiresDate >= CURRENT_TIMESTAMP")
+	Optional<UserQueueEntity> findActiveUserQueueByUserId(@Param("userId") Long userId);
 }

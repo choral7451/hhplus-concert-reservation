@@ -7,5 +7,6 @@ import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 public interface UserQueueRepository {
 	UserQueue save(Long userId, String token);
 	Optional<UserQueue> findByUserId(Long userId);
+	Optional<UserQueue> findActiveUserQueueByUserId(Long userId);
 	int countCurrentOrderByUserId(Long userId);
 }

@@ -23,6 +23,12 @@ public class UserQueueJpaRepositoryImpl implements UserQueueRepository {
 	}
 
 	@Override
+	public Optional<UserQueue> findActiveUserQueueByUserId(Long userId) {
+		Optional<UserQueueEntity> userQueueEntity = userQueueJpaRepository.findActiveUserQueueByUserId(userId);
+		return userQueueEntity.map(UserQueueMapper::toDomain);
+	}
+
+	@Override
 	public Optional<UserQueue> findByUserId(Long userId) {
 		Optional<UserQueueEntity> userQueueEntity = userQueueJpaRepository.findByUserId(userId);
 		return userQueueEntity.map(UserQueueMapper::toDomain);
