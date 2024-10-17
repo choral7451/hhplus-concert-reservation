@@ -28,4 +28,10 @@ public class ConcertBookingJpaRepositoryImpl implements ConcertBookingRepository
 		return this.concertBookingJpaRepository.findBookedSeatBySeatId(seatId)
 			.map(ConcertBookingMapper::toDomain);
 	}
+
+	@Override
+	public Optional<ConcertBooking> findByIdAndUserId(Long bookingId, Long userId) {
+		return this.concertBookingJpaRepository.findByIdAndUserId(bookingId, userId)
+			.map(ConcertBookingMapper::toDomain);
+	}
 }

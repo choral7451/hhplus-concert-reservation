@@ -7,4 +7,5 @@ import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
 public interface ConcertBookingRepository {
 	ConcertBooking save(ConcertBooking concertBooking);
 	Optional<ConcertBooking> findBookedSeatBySeatId(Long seatId);
+	Optional<ConcertBooking> findByIdAndUserId(Long bookingId, Long userId);
 }

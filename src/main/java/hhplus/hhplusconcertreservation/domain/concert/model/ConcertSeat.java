@@ -24,6 +24,12 @@ public class ConcertSeat {
 		this.updatedDate = updatedDate;
 	}
 
+	public ConcertSeat outBox() {
+		this.isPaid = true;
+
+		return this;
+	}
+
 	public Long getId() {
 		return id;
 	}

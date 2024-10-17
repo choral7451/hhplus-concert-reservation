@@ -16,15 +16,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
+import hhplus.hhplusconcertreservation.domain.concert.exception.ConcertBookingNotFound;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
 import hhplus.hhplusconcertreservation.domain.concert.model.Concert;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
+import hhplus.hhplusconcertreservation.domain.concert.model.ConcertPayment;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertSeat;
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertBookingRepository;
+import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertPaymentRepository;
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertScheduleRepository;
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
+import hhplus.hhplusconcertreservation.domain.point.model.Point;
+import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
+import hhplus.hhplusconcertreservation.domain.point.service.exception.InsufficientPoints;
+import hhplus.hhplusconcertreservation.domain.point.service.exception.PointNotFound;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
@@ -56,6 +63,12 @@ class ConcertServiceUnitTest {
 
 	@Mock
 	private ConcertBookingRepository concertBookingRepository;
+
+	@Mock
+	private PointRepository pointRepository;
+
+	@Mock
+	private ConcertPaymentRepository concertPaymentRepository;
 
 	@Test
 	public void 권한이_존재하는_유저_공연_일정_전체_조회() {
@@ -201,6 +214,7 @@ class ConcertServiceUnitTest {
 		// when
 		ConcertBooking concertBooking = concertService.bookConcertSeat("테스트토큰", givenSeatId);
 
+		// then
 		assertEquals(concertBooking.getId(), givenConcertBooking.getId());
 		assertEquals(concertBooking.getConcert(), givenConcertBooking.getConcert());
 		assertEquals(concertBooking.getConcertSchedule(), givenConcertBooking.getConcertSchedule());
@@ -289,5 +303,134 @@ class ConcertServiceUnitTest {
 
 		// then
 		verify(concertBookingRepository, never()).save(any());
+	}
+
+	@Test
+	public void 결제를_요청_합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenBookingId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Point givenPoint = new Point(1L, givenUser, 1000L, LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(1L, givenConcert, givenConcertSchedule, 1, 500, false, LocalDateTime.now(),
+			LocalDateTime.now());
+		ConcertBooking givenConcertBooking = new ConcertBooking(
+			givenBookingId,
+			givenUser,
+			givenConcert,
+			givenConcertSchedule,
+			givenSeat,
+			500,
+			false,
+			LocalDateTime.now().plusMinutes(5),
+			LocalDateTime.now(),
+			LocalDateTime.now()
+		);
+		ConcertPayment givenConcertPayment = new ConcertPayment(givenConcertBooking);
+
+		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
+		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
+		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
+		when(concertPaymentRepository.save(any())).thenReturn(givenConcertPayment);
+
+		// when
+		ConcertPayment concertBooking = concertService.pay("테스트토큰", givenBookingId);
+
+		// then
+		assertEquals(concertBooking.getId(), givenConcertPayment.getId());
+		assertEquals(concertBooking.getConcert(), givenConcertPayment.getConcert());
+		assertEquals(concertBooking.getConcertSchedule(), givenConcertPayment.getConcertSchedule());
+		assertEquals(concertBooking.getConcertSeat(), givenConcertPayment.getConcertSeat());
+		assertEquals(concertBooking.getConcertBooking(), givenConcertPayment.getConcertBooking());
+		assertEquals(concertBooking.getPrice(), givenConcertPayment.getPrice());
+	}
+
+	@Test
+	public void 포인트가_존재하지_않는_유저가_결제를_요청_합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenBookingId = 1L;
+
+		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
+		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+
+		// when
+		PointNotFound exception = assertThrows(PointNotFound.class, () -> {
+			concertService.pay("테스트토큰", givenBookingId);
+		});
+
+		assertEquals("POINT_NOT_FOUND", exception.getMessage());
+
+		// then
+		verify(concertBookingRepository, never()).findByIdAndUserId(anyLong(), anyLong());
+		verify(concertPaymentRepository, never()).save(any());
+	}
+
+	@Test
+	public void 예약이_존재하지_않는_유저가_결제를_요청_합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenBookingId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Point givenPoint = new Point(1L, givenUser, 1000L, LocalDateTime.now(), LocalDateTime.now());
+
+		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
+		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
+		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
+
+		// when
+		ConcertBookingNotFound exception = assertThrows(ConcertBookingNotFound.class, () -> {
+			concertService.pay("테스트토큰", givenBookingId);
+		});
+
+		assertEquals("CONCERT_BOOKING_NOT_FOUND", exception.getMessage());
+
+		// then
+		verify(concertPaymentRepository, never()).save(any());
+	}
+
+	@Test
+	public void 포인트가_부족한_유저가_결제를_요청_합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenBookingId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Point givenPoint = new Point(1L, givenUser, 400L, LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(1L, givenConcert, givenConcertSchedule, 1, 500, false, LocalDateTime.now(),
+			LocalDateTime.now());
+		ConcertBooking givenConcertBooking = new ConcertBooking(
+			givenBookingId,
+			givenUser,
+			givenConcert,
+			givenConcertSchedule,
+			givenSeat,
+			500,
+			false,
+			LocalDateTime.now().plusMinutes(5),
+			LocalDateTime.now(),
+			LocalDateTime.now()
+		);
+
+		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
+		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
+		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
+
+		// when
+		InsufficientPoints exception = assertThrows(InsufficientPoints.class, () -> {
+			concertService.pay("테스트토큰", givenBookingId);
+		});
+
+		assertEquals("INSUFFICIENT_POINTS", exception.getMessage());
+
+		// then
+		verify(concertPaymentRepository, never()).save(any());
 	}
 }

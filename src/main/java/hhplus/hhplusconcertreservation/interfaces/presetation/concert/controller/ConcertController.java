@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hhplus.hhplusconcertreservation.domain.concert.service.ConcertService;
 import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertBookingResponse;
+import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertPaymentResponse;
 import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertScheduleResponse;
 import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertSeatsResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,12 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/concerts")
 public class ConcertController {
 	private final ConcertService concertService;
+
+	@PostMapping("/schedules/seats/bookings/{bookingId}/pay")
+	public ConcertPaymentResponse pay(@RequestHeader("Authorization") String token, @PathVariable Long bookingId) {
+		String jwtToken = token.replace("Bearer ", "");
+		return new ConcertPaymentResponse(concertService.pay(jwtToken, bookingId));
+	}
 
 	@PostMapping("/schedules/seats/{seatId}/book")
 	public ConcertBookingResponse bookConcertSeat(@RequestHeader("WaitingToken") String token, @PathVariable Long seatId) {

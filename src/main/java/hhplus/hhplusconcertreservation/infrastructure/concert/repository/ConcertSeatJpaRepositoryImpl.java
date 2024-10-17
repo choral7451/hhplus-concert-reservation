@@ -27,4 +27,11 @@ public class ConcertSeatJpaRepositoryImpl implements ConcertSeatRepository {
 		ConcertSeatEntity entity = concertSeatJpaRepository.findByIdWithLock(id);
 		return ConcertSeatMapper.toDomain(entity);
 	}
+
+	@Override
+	public ConcertSeat save(ConcertSeat concertSeat) {
+		ConcertSeatEntity entity = ConcertSeatMapper.toEntity(concertSeat);
+		concertSeatJpaRepository.save(entity);
+		return ConcertSeatMapper.toDomain(entity);
+	}
 }
