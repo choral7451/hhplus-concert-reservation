@@ -14,17 +14,24 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
+import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
 import hhplus.hhplusconcertreservation.domain.concert.model.Concert;
+import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertSeat;
+import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertBookingRepository;
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertScheduleRepository;
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
+import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
+import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
+import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class ConcertServiceUnitTest {
@@ -39,10 +46,16 @@ class ConcertServiceUnitTest {
 	private ConcertScheduleRepository concertScheduleRepository;
 
 	@Mock
+	private UserRepository userRepository;
+
+	@Mock
 	private UserQueueRepository userQueueRepository;
 
 	@Mock
 	private ConcertSeatRepository concertSeatRepository;
+
+	@Mock
+	private ConcertBookingRepository concertBookingRepository;
 
 	@Test
 	public void 권한이_존재하는_유저_공연_일정_전체_조회() {
@@ -163,5 +176,118 @@ class ConcertServiceUnitTest {
 
 		// then
 		verify(concertSeatRepository, never()).findAllByConcertScheduleId(anyLong());
+	}
+
+	@Test
+	public void 공연_좌석을_예약합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenSeatId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(givenSeatId, givenConcert, givenConcertSchedule, 1, 1000, false, LocalDateTime.now(),
+			LocalDateTime.now());
+		ConcertBooking givenConcertBooking = new ConcertBooking(givenUser, givenSeat);
+
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
+		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
+		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
+		when(concertBookingRepository.findBookedSeatBySeatId(any())).thenReturn(Optional.empty());
+		when(concertBookingRepository.save(any())).thenReturn(givenConcertBooking);
+
+		// when
+		ConcertBooking concertBooking = concertService.bookConcertSeat("테스트토큰", givenSeatId);
+
+		assertEquals(concertBooking.getId(), givenConcertBooking.getId());
+		assertEquals(concertBooking.getConcert(), givenConcertBooking.getConcert());
+		assertEquals(concertBooking.getConcertSchedule(), givenConcertBooking.getConcertSchedule());
+		assertEquals(concertBooking.getConcertSeat(), givenConcertBooking.getConcertSeat());
+		assertEquals(concertBooking.getPrice(), givenConcertBooking.getPrice());
+		assertEquals(concertBooking.getPaid(), givenConcertBooking.getPaid());
+	}
+
+	@Test
+	public void 존재하지_않는_공연_좌석을_예약합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenSeatId = 1L;
+
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
+		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+
+		// when
+		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+		});
+
+		assertEquals("USER_NOT_FOUND", exception.getMessage());
+
+		// then
+		verify(concertSeatRepository, never()).findAllByConcertScheduleId(anyLong());
+		verify(concertSeatRepository, never()).findByIdWithLock(anyLong());
+		verify(concertBookingRepository, never()).findBookedSeatBySeatId(anyLong());
+		verify(concertBookingRepository, never()).save(any());
+	}
+
+	@Test
+	public void 이미_판매된_좌석을_예약합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenSeatId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(givenSeatId, givenConcert, givenConcertSchedule, 1, 1000, true, LocalDateTime.now(),
+			LocalDateTime.now());
+
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
+		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
+		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
+
+		// when
+		AlreadyPaidSeat exception = assertThrows(AlreadyPaidSeat.class, () -> {
+			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+		});
+
+		assertEquals("ALREADY_PAID_SEAT", exception.getMessage());
+
+		// then
+		verify(concertBookingRepository, never()).findBookedSeatBySeatId(anyLong());
+		verify(concertBookingRepository, never()).save(any());
+	}
+
+	@Test
+	public void 이미_예약된_좌석을_예약합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenSeatId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(givenSeatId, givenConcert, givenConcertSchedule, 1, 1000, false, LocalDateTime.now(),
+			LocalDateTime.now());
+		ConcertBooking givenConcertBooking = new ConcertBooking(givenUser, givenSeat);
+
+		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
+		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
+		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
+		when(concertBookingRepository.findBookedSeatBySeatId(any())).thenReturn(Optional.of(givenConcertBooking));
+
+		// when
+		AlreadyBookedSeat exception = assertThrows(AlreadyBookedSeat.class, () -> {
+			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+		});
+
+		assertEquals("ALREADY_BOOKED_SEAT", exception.getMessage());
+
+		// then
+		verify(concertBookingRepository, never()).save(any());
 	}
 }
