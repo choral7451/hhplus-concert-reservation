@@ -1,5 +1,6 @@
 package hhplus.hhplusconcertreservation.infrastructure.point.repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -26,9 +27,20 @@ public class PointJpaRepositoryImpl implements PointRepository {
 
 	@Override
 	public Point save(User user) {
-		PointEntity entity = PointEntity.builder().user(UserMapper.toEntity(user)).amount(0L).build();
+		PointEntity entity = PointEntity.builder()
+			.user(UserMapper.toEntity(user))
+			.amount(0L)
+			.createdDate(LocalDateTime.now())
+			.updatedDate(LocalDateTime.now())
+			.build();
 		pointJpaRepository.save(entity);
 
+		return PointMapper.toDomain(entity);
+	}
+
+	@Override
+	public Point update(Point point) {
+		PointEntity entity = pointJpaRepository.save(PointMapper.toEntity(point));
 		return PointMapper.toDomain(entity);
 	}
 }

@@ -7,7 +7,7 @@ import hhplus.hhplusconcertreservation.domain.user.model.User;
 public class Point {
 	private final Long id;
 	private final User user;
-	private final Long amount;
+	private Long amount;
 	private final LocalDateTime createdDate;
 	private final LocalDateTime updatedDate;
 
@@ -17,6 +17,12 @@ public class Point {
 		this.amount = amount;
 		this.createdDate = createdDate;
 		this.updatedDate = updatedDate;
+	}
+
+	public Point setAmount(Long amount) {
+		this.amount = amount;
+
+		return this;
 	}
 
 	public Long getId() {
