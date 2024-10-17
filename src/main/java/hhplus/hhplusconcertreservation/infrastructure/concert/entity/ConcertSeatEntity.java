@@ -17,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -53,4 +54,17 @@ public class ConcertSeatEntity {
 	@LastModifiedDate
 	@Column(name = "updated_date", nullable = false)
 	private LocalDateTime updatedDate;
+
+	@Builder
+	public ConcertSeatEntity(Long id, ConcertEntity concert, ConcertScheduleEntity concertSchedule, Integer number,
+		Integer price, Boolean isPaid, LocalDateTime createdDate, LocalDateTime updatedDate) {
+		this.id = id;
+		this.concert = concert;
+		this.concertSchedule = concertSchedule;
+		this.number = number;
+		this.price = price;
+		this.isPaid = isPaid;
+		this.createdDate = createdDate;
+		this.updatedDate = updatedDate;
+	}
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import hhplus.hhplusconcertreservation.domain.concert.service.ConcertService;
 import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertScheduleResponse;
+import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertSeatsResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -30,5 +31,13 @@ public class ConcertController {
 				concertSchedule.getBookingEndDate(),
 				concertSchedule.getPerformanceDate())
 			).toList();
+	}
+
+	@GetMapping("/schedules/{scheduleId}/seats")
+	public List<ConcertSeatsResponse> concertScheduleSeats(@RequestHeader("Authorization") String token, @PathVariable Long scheduleId) {
+		String jwtToken = token.replace("Bearer ", "");
+
+		return concertService.scanAllSeats(jwtToken, scheduleId)
+			.stream().map(ConcertSeatsResponse::new).toList();
 	}
 }
