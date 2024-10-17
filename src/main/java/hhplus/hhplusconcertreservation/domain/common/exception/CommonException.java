@@ -1,4 +1,4 @@
-package hhplus.hhplusconcertreservation.domain.user.service.common.exception;
+package hhplus.hhplusconcertreservation.domain.common.exception;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -18,6 +18,11 @@ public class UserQueueJpaRepositoryImpl implements UserQueueRepository {
 	private final UserQueueJpaRepository userQueueJpaRepository;
 
 	@Override
+	public int countCurrentOrderByUserId(Long userId) {
+		return userQueueJpaRepository.countCurrentOrderByUserId(userId);
+	}
+
+	@Override
 	public Optional<UserQueue> findByUserId(Long userId) {
 		Optional<UserQueueEntity> userQueueEntity = userQueueJpaRepository.findByUserId(userId);
 		return userQueueEntity.map(UserQueueMapper::toDomain);

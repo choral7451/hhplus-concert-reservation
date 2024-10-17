@@ -2,6 +2,9 @@ package hhplus.hhplusconcertreservation.infrastructure.user.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -22,6 +25,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(name = "user_queues")
+@SQLDelete(sql = "UPDATE user_queues SET deleted_date = NOW() WHERE id = ?")
+@SQLRestriction("deleted_date is NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserQueueEntity {
 	@Id
@@ -38,7 +43,7 @@ public class UserQueueEntity {
 	@Column(name = "token", nullable = false)
 	private String token;
 
-	@Column(name = "expires_date", nullable = true)
+	@Column(name = "expires_date")
 	private LocalDateTime expiresDate;
 
 	@CreatedDate
@@ -48,6 +53,9 @@ public class UserQueueEntity {
 	@LastModifiedDate
 	@Column(name = "updated_date", nullable = false)
 	private LocalDateTime updatedDate;
+
+	@Column(name = "deleted_date")
+	private LocalDateTime deletedDate;
 
 	@Builder
 	public UserQueueEntity(Long id, Long userId, UserQueueEntityStatus status, String token, LocalDateTime expiresDate, LocalDateTime createdDate, LocalDateTime updatedDate) {

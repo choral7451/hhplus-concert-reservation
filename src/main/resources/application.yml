@@ -16,3 +16,6 @@ spring:
     properties:
       hibernate:
         show_sql: true
+
+variables:
+  secretKey: "mySuperSecretKeyForJwtSigningWhichIsLongEnough1234"

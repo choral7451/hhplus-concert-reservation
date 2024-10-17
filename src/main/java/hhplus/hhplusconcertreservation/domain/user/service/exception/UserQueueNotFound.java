@@ -2,10 +2,10 @@ package hhplus.hhplusconcertreservation.domain.user.service.exception;
 
 import hhplus.hhplusconcertreservation.domain.common.exception.CommonException;
 
-public class UserNotFound extends CommonException {
-	private static final String MESSAGE = "USER_NOT_FOUND";
+public class UserQueueNotFound extends CommonException {
+	private static final String MESSAGE = "USER_QUEUE_NOT_FOUND";
 
-	public UserNotFound() {
+	public UserQueueNotFound() {
 		super(MESSAGE);
 	}
 

@@ -2,12 +2,12 @@ package hhplus.hhplusconcertreservation.domain.user.model;
 
 import java.time.LocalDateTime;
 
-import hhplus.hhplusconcertreservation.infrastructure.user.enums.UserQueueEntityStatus;
+import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
 
 public class UserQueue {
 	private Long id;
 	private Long userId;
-	private UserQueueEntityStatus status;
+	private UserQueueStatus status;
 	private String token;
 	private Integer currentOrder;
 	private LocalDateTime expiresDate;
@@ -16,13 +16,13 @@ public class UserQueue {
 
 	public UserQueue(Long userId, String token) {
 		this.userId = userId;
-		this.status = UserQueueEntityStatus.WAITING;
+		this.status = UserQueueStatus.WAITING;
 		this.token = token;
 		this.createdDate = LocalDateTime.now();
 		this.updatedDate = LocalDateTime.now();
 	}
 
-	public UserQueue(Long id, Long userId, UserQueueEntityStatus status, String token, LocalDateTime expiresDate,
+	public UserQueue(Long id, Long userId, UserQueueStatus status, String token, LocalDateTime expiresDate,
 		LocalDateTime createdDate, LocalDateTime updatedDate) {
 		this.id = id;
 		this.userId = userId;
@@ -47,7 +47,7 @@ public class UserQueue {
 		return userId;
 	}
 
-	public UserQueueEntityStatus getStatus() {
+	public UserQueueStatus getStatus() {
 		return status;
 	}
 

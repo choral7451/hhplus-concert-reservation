@@ -8,7 +8,7 @@ public class UserQueueMapper {
 		return new UserQueue(
 			entity.getId(),
 			entity.getUserId(),
-			entity.getStatus(),
+			UserQueueStatusMapper.toUserQueueStatus(entity.getStatus()),
 			entity.getToken(),
 			entity.getExpiresDate(),
 			entity.getCreatedDate(),
@@ -20,7 +20,7 @@ public class UserQueueMapper {
 		return UserQueueEntity.builder()
 			.id(domain.getId())
 			.userId(domain.getUserId())
-			.status(domain.getStatus())
+			.status(UserQueueStatusMapper.toUserQueueEntityStatus(domain.getStatus()))
 			.token(domain.getToken())
 			.expiresDate(domain.getExpiresDate())
 			.createdDate(domain.getCreatedDate())
