@@ -1,5 +1,6 @@
 package hhplus.hhplusconcertreservation.domain.concert.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.ConcertBookingNotFound;
+import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
@@ -52,6 +54,8 @@ public class ConcertService {
 
 		if(concertBooking.getPrice() > point.getAmount()) {
 			throw new InsufficientPoints();
+		} else if(concertBooking.getExpiresDate().isBefore(LocalDateTime.now())) {
+			throw new ReservationExpired();
 		}
 
 		Long calculatedAmount = point.getAmount() - concertBooking.getPrice();
@@ -62,7 +66,7 @@ public class ConcertService {
 		concertSeat.outBox();
 		concertSeatRepository.save(concertSeat);
 
-		concertBooking.outBox();\
+		concertBooking.outBox();
 		concertBookingRepository.save(concertBooking);
 
 		return concertPaymentRepository.save(new ConcertPayment(concertBooking));

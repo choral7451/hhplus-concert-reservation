@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
 import hhplus.hhplusconcertreservation.domain.concert.exception.ConcertBookingNotFound;
+import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
 import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
 import hhplus.hhplusconcertreservation.domain.concert.model.Concert;
@@ -429,6 +430,47 @@ class ConcertServiceUnitTest {
 		});
 
 		assertEquals("INSUFFICIENT_POINTS", exception.getMessage());
+
+		// then
+		verify(concertPaymentRepository, never()).save(any());
+	}
+
+	@Test
+	public void 만료된_예약을_유저가_결제를_요청_합니다() {
+		// given
+		Long givenUserId = 1L;
+		Long givenBookingId = 1L;
+		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
+		Point givenPoint = new Point(1L, givenUser, 600L, LocalDateTime.now(), LocalDateTime.now());
+		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
+		ConcertSchedule givenConcertSchedule =
+			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
+		ConcertSeat givenSeat = new ConcertSeat(1L, givenConcert, givenConcertSchedule, 1, 500, false, LocalDateTime.now(),
+			LocalDateTime.now());
+		ConcertBooking givenConcertBooking = new ConcertBooking(
+			givenBookingId,
+			givenUser,
+			givenConcert,
+			givenConcertSchedule,
+			givenSeat,
+			500,
+			false,
+			LocalDateTime.now().minusMinutes(5),
+			LocalDateTime.now(),
+			LocalDateTime.now()
+		);
+
+		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
+		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
+		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
+
+		// when
+		ReservationExpired exception = assertThrows(ReservationExpired.class, () -> {
+			concertService.pay("테스트토큰", givenBookingId);
+		});
+
+		assertEquals("RESERVATION_EXPIRED", exception.getMessage());
 
 		// then
 		verify(concertPaymentRepository, never()).save(any());
