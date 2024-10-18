@@ -10,14 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 import hhplus.hhplusconcertreservation.domain.point.service.PointService;
 import hhplus.hhplusconcertreservation.interfaces.presetation.point.dto.request.ChargePointRequest;
 import hhplus.hhplusconcertreservation.interfaces.presetation.point.dto.response.PointResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "POINT")
 @RequestMapping("/points")
 public class PointController {
 	private final PointService pointService;
 
+	@Operation(summary = "포인트 조회")
 	@GetMapping("/{userId}")
 	public PointResponse scanPoint(
 		@RequestHeader("Authorization") String token
@@ -27,6 +31,7 @@ public class PointController {
 		return new PointResponse(pointService.scanPoint(jwtToken));
 	}
 
+	@Operation(summary = "포인트 충전")
 	@PatchMapping("/{userId}/charge")
 	public PointResponse chargePoint(
 		@RequestHeader("Authorization") String token,
