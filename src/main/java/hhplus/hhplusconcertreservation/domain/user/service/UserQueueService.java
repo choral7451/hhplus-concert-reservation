@@ -1,5 +1,7 @@
 package hhplus.hhplusconcertreservation.domain.user.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
@@ -19,6 +21,9 @@ public class UserQueueService {
 	private final UserRepository userRepository;
 	private final UserQueueRepository userQueueRepository;
 
+	private static final int MAXIMUM_ACTIVE_USER = 10;
+	private static final int WAITING_TOKEN_ACTIVE_TIME_MINUTES = 5;
+
 	public String issueToken(Long userId) {
 		userRepository.findByUserId(userId)
 			.orElseThrow(UserNotFound::new);
@@ -34,11 +39,23 @@ public class UserQueueService {
 
 		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(UserQueueNotFound::new);
 
-		if(userQueue.getStatus() == UserQueueStatus.WAITING) {
+		if (userQueue.getStatus() == UserQueueStatus.WAITING) {
 			int currentOrder = userQueueRepository.countCurrentOrderByUserId(userId);
 			userQueue.setCurrentOrder(currentOrder);
 		}
 
 		return userQueue;
+	}
+
+	public void deleteExpiredUserQueues() {
+		System.out.println("This is an info message");
+		userQueueRepository.deleteExpiredUserQueues();
+	}
+
+	public void activeUserQueues() {
+		System.out.println("This is an info message222");
+		int activeUser = userQueueRepository.countActiveUserQueues();
+		LocalDateTime expiresDate = LocalDateTime.now().plusMinutes(WAITING_TOKEN_ACTIVE_TIME_MINUTES);
+		userQueueRepository.activateUserQueues(MAXIMUM_ACTIVE_USER - activeUser, expiresDate);
 	}
 }

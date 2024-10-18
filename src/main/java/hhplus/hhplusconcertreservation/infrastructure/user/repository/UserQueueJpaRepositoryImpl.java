@@ -1,6 +1,7 @@
 package hhplus.hhplusconcertreservation.infrastructure.user.repository;
 
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -39,5 +40,20 @@ public class UserQueueJpaRepositoryImpl implements UserQueueRepository {
 		UserQueue userQueue = new UserQueue(userId, token);
 		UserQueueEntity userQueueEntity = userQueueJpaRepository.save(UserQueueMapper.toEntity(userQueue));
 		return UserQueueMapper.toDomain(userQueueEntity);
+	}
+
+	@Override
+	public void deleteExpiredUserQueues() {
+		userQueueJpaRepository.deleteExpiredUserQueues();
+	}
+
+	@Override
+	public void activateUserQueues(int limit, LocalDateTime expiresDate) {
+		userQueueJpaRepository.activateUserQueues(limit, expiresDate);
+	}
+
+	@Override
+	public int countActiveUserQueues() {
+		return userQueueJpaRepository.countActiveUserQueues();
 	}
 }
