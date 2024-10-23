@@ -14,12 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class PointServiceUnitTest {
@@ -89,7 +89,7 @@ class PointServiceUnitTest {
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			pointService.scanPoint("테스트토큰");
 		});
 
@@ -131,7 +131,7 @@ class PointServiceUnitTest {
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			pointService.scanPoint("테스트토큰");
 		});
 

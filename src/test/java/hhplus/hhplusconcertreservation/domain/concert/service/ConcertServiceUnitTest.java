@@ -14,12 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
-import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
-import hhplus.hhplusconcertreservation.domain.concert.exception.ConcertBookingNotFound;
-import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
-import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
-import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import hhplus.hhplusconcertreservation.domain.concert.model.Concert;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertPayment;
@@ -31,15 +26,12 @@ import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSchedule
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
-import hhplus.hhplusconcertreservation.domain.point.service.exception.InsufficientPoints;
-import hhplus.hhplusconcertreservation.domain.point.service.exception.PointNotFound;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class ConcertServiceUnitTest {
@@ -121,7 +113,7 @@ class ConcertServiceUnitTest {
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UnableToRetrieveConcertSchedule exception = assertThrows(UnableToRetrieveConcertSchedule.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.scanAllBookableConcertSchedules(givenJwtToken, givenUserId);
 		});
 
@@ -182,7 +174,7 @@ class ConcertServiceUnitTest {
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UnableToRetrieveConcertSeat exception = assertThrows(UnableToRetrieveConcertSeat.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.scanAllSeats(givenJwtToken, 1L);
 		});
 
@@ -234,7 +226,7 @@ class ConcertServiceUnitTest {
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.bookConcertSeat("테스트토큰", givenSeatId);
 		});
 
@@ -265,7 +257,7 @@ class ConcertServiceUnitTest {
 		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
 
 		// when
-		AlreadyPaidSeat exception = assertThrows(AlreadyPaidSeat.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.bookConcertSeat("테스트토큰", givenSeatId);
 		});
 
@@ -296,7 +288,7 @@ class ConcertServiceUnitTest {
 		when(concertBookingRepository.findBookedSeatBySeatId(any())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
-		AlreadyBookedSeat exception = assertThrows(AlreadyBookedSeat.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.bookConcertSeat("테스트토큰", givenSeatId);
 		});
 
@@ -360,7 +352,7 @@ class ConcertServiceUnitTest {
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		PointNotFound exception = assertThrows(PointNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.pay("테스트토큰", givenBookingId);
 		});
 
@@ -384,11 +376,11 @@ class ConcertServiceUnitTest {
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
 
 		// when
-		ConcertBookingNotFound exception = assertThrows(ConcertBookingNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.pay("테스트토큰", givenBookingId);
 		});
 
-		assertEquals("CONCERT_BOOKING_NOT_FOUND", exception.getMessage());
+		assertEquals("NOT_FOUND_CONCERT_BOOKING", exception.getMessage());
 
 		// then
 		verify(concertPaymentRepository, never()).save(any());
@@ -425,7 +417,7 @@ class ConcertServiceUnitTest {
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
-		InsufficientPoints exception = assertThrows(InsufficientPoints.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.pay("테스트토큰", givenBookingId);
 		});
 
@@ -466,7 +458,7 @@ class ConcertServiceUnitTest {
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
-		ReservationExpired exception = assertThrows(ReservationExpired.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.pay("테스트토큰", givenBookingId);
 		});
 

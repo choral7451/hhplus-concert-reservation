@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import hhplus.hhplusconcertreservation.domain.token.exception.InvalidToken;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -55,7 +55,7 @@ class TokenServiceUnitTest {
 		String givenInvalidToken = "invalidToken";
 
 		// when
-		InvalidToken exception = assertThrows(InvalidToken.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			tokenService.getUserIdByWaitingToken(givenInvalidToken);
 		});
 
@@ -90,8 +90,8 @@ class TokenServiceUnitTest {
 		String givenInvalidToken = "invalidToken";
 
 		// when
-		InvalidToken exception = assertThrows(InvalidToken.class, () -> {
-			tokenService.getUserIdByAuthToken(givenInvalidToken);
+		CoreException exception = assertThrows(CoreException.class, () -> {
+			tokenService.getUserIdByWaitingToken(givenInvalidToken);
 		});
 
 		// then

@@ -13,13 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserQueueNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class UserQueueServiceUnitTest {
@@ -77,7 +76,7 @@ class UserQueueServiceUnitTest {
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			userQueueService.issueToken(1L);
 		});
 
@@ -120,7 +119,7 @@ class UserQueueServiceUnitTest {
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserQueueNotFound exception = assertThrows(UserQueueNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			userQueueService.scanUserQueue(givenToken);
 		});
 
