@@ -2,6 +2,7 @@ package hhplus.hhplusconcertreservation.domain.point.model;
 
 import java.time.LocalDateTime;
 
+import hhplus.hhplusconcertreservation.domain.point.service.exception.InsufficientPoints;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 
 public class Point {
@@ -11,12 +12,30 @@ public class Point {
 	private final LocalDateTime createdDate;
 	private final LocalDateTime updatedDate;
 
+
 	public Point(Long id, User user, Long amount, LocalDateTime createdDate, LocalDateTime updatedDate) {
 		this.id = id;
 		this.user = user;
 		this.amount = amount;
 		this.createdDate = createdDate;
 		this.updatedDate = updatedDate;
+	}
+
+	public Point deduct(Integer amount) {
+		this.amount = this.amount - amount;
+		return this;
+	}
+
+	public Point charge(Long amount) {
+		this.amount = this.amount + amount;
+		return this;
+	}
+
+	// validate
+	public void validateSufficientPoints(Integer amount) {
+		if(amount > this.amount) {
+			throw new InsufficientPoints();
+		}
 	}
 
 	public Point setAmount(Long amount) {

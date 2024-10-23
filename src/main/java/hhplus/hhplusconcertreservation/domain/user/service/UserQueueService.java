@@ -39,7 +39,7 @@ public class UserQueueService {
 
 		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(UserQueueNotFound::new);
 
-		if (userQueue.getStatus() == UserQueueStatus.WAITING) {
+		if (userQueue.isWaiting()) {
 			int currentOrder = userQueueRepository.countCurrentOrderByUserId(userId);
 			userQueue.setCurrentOrder(currentOrder);
 		}
@@ -52,8 +52,8 @@ public class UserQueueService {
 	}
 
 	public void activeUserQueues() {
-		int activeUser = userQueueRepository.countActiveUserQueues();
+		int activeUsers = userQueueRepository.countActiveUserQueues();
 		LocalDateTime expiresDate = LocalDateTime.now().plusMinutes(WAITING_TOKEN_ACTIVE_TIME_MINUTES);
-		userQueueRepository.activateUserQueues(MAXIMUM_ACTIVE_USER - activeUser, expiresDate);
+		userQueueRepository.activateUserQueues(MAXIMUM_ACTIVE_USER - activeUsers, expiresDate);
 	}
 }

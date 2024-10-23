@@ -2,6 +2,8 @@ package hhplus.hhplusconcertreservation.domain.concert.model;
 
 import java.time.LocalDateTime;
 
+import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
+
 public class ConcertSeat {
 	private Long id;
 	private Concert concert;
@@ -28,6 +30,11 @@ public class ConcertSeat {
 		this.isPaid = true;
 
 		return this;
+	}
+
+	//validate
+	public void validateSeatPayment() {
+		if(this.getPaid()) throw new AlreadyPaidSeat();
 	}
 
 	public Long getId() {

@@ -52,14 +52,10 @@ public class ConcertService {
 		ConcertBooking concertBooking = concertBookingRepository.findByIdAndUserId(bookingId, userId)
 			.orElseThrow(ConcertBookingNotFound::new);
 
-		if(concertBooking.getPrice() > point.getAmount()) {
-			throw new InsufficientPoints();
-		} else if(concertBooking.getExpiresDate().isBefore(LocalDateTime.now())) {
-			throw new ReservationExpired();
-		}
+		point.validateSufficientPoints(concertBooking.getPrice());
+		concertBooking.validateReservationExpiration();
 
-		Long calculatedAmount = point.getAmount() - concertBooking.getPrice();
-		point.setAmount(calculatedAmount);
+		point.deduct(concertBooking.getPrice());
 		pointRepository.update(point);
 
 		ConcertSeat concertSeat = concertBooking.getConcertSeat();
@@ -77,7 +73,7 @@ public class ConcertService {
 		Long userId = tokenService.getUserIdByWaitingToken(token);
 		User user = userRepository.findByUserId(userId).orElseThrow(UserNotFound::new);
 		ConcertSeat seat = concertSeatRepository.findByIdWithLock(seatId);
-		if(seat.getPaid()) throw new AlreadyPaidSeat();
+		seat.validateSeatPayment();
 
 		Optional<ConcertBooking> alreadyBooked = concertBookingRepository.findBookedSeatBySeatId(seatId);
 		if(alreadyBooked.isPresent()) throw new AlreadyBookedSeat();

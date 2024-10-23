@@ -2,6 +2,7 @@ package hhplus.hhplusconcertreservation.domain.concert.model;
 
 import java.time.LocalDateTime;
 
+import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 
 public class ConcertBooking {
@@ -46,6 +47,13 @@ public class ConcertBooking {
 		this.isPaid = true;
 		return this;
 	}
+
+	public void validateReservationExpiration() {
+		if(this.getExpiresDate().isBefore(LocalDateTime.now())) {
+			throw new ReservationExpired();
+		}
+	}
+
 
 	public Long getId() {
 		return id;

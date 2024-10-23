@@ -32,7 +32,7 @@ public class PointService {
 		User user = userRepository.findByUserId(userId).orElseThrow(UserNotFound::new);
 		Point point = pointRepository.findByUserId(userId).
 			orElseGet(() -> pointRepository.save(user));
-		point.setAmount(point.getAmount() + amount);
+		point.charge(amount);
 
 		return pointRepository.update(point);
 	}

@@ -33,6 +33,10 @@ public class UserQueue {
 		this.updatedDate = updatedDate;
 	}
 
+	public boolean isWaiting() {
+		return this.status == UserQueueStatus.WAITING;
+	}
+
 	public UserQueue setCurrentOrder(int order) {
 		this.currentOrder = order;
 
