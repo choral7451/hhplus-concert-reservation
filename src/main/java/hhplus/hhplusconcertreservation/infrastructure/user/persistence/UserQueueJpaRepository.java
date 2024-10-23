@@ -26,8 +26,8 @@ public interface UserQueueJpaRepository extends JpaRepository<UserQueueEntity, L
 
 	@Transactional
 	@Modifying
-	@Query(value = "UPDATE user_queues u SET u.status = 'ACTIVATION', u.expires_date = :expiresDate " +
-		"WHERE u.id IN (SELECT u2.id FROM user_queues u2 WHERE u2.status = 'WAITING' " +
+	@Query(value = "UPDATE user_queues SET status = 'ACTIVATION', expires_date = :expiresDate " +
+		"WHERE id IN (SELECT u2.id FROM user_queues u2 WHERE u2.status = 'WAITING' " +
 		"ORDER BY u2.id ASC LIMIT :limit)", nativeQuery = true)
 	void activateUserQueues(@Param("limit") int limit, @Param("expiresDate") LocalDateTime expiresDate);
 

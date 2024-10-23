@@ -48,12 +48,10 @@ public class UserQueueService {
 	}
 
 	public void deleteExpiredUserQueues() {
-		System.out.println("This is an info message");
 		userQueueRepository.deleteExpiredUserQueues();
 	}
 
 	public void activeUserQueues() {
-		System.out.println("This is an info message222");
 		int activeUser = userQueueRepository.countActiveUserQueues();
 		LocalDateTime expiresDate = LocalDateTime.now().plusMinutes(WAITING_TOKEN_ACTIVE_TIME_MINUTES);
 		userQueueRepository.activateUserQueues(MAXIMUM_ACTIVE_USER - activeUser, expiresDate);
