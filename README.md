@@ -1,6 +1,7 @@
 # 항해 플러스 - 공연 예약 서비스
 
 --- 
+<img src="docs/swagger.png">
 
 # 1. <a href="https://github.com/users/choral7451/projects/1/views/5?layout=roadmap">Milestone</a>
 # 2. Flowchart
