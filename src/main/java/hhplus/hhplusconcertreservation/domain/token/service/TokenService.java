@@ -58,7 +58,7 @@ public class TokenService {
 			return claims.get("userId", Long.class);
 		} catch (Exception e) {
 			log.error("Invalid token", e);
-			throw new CoreException(ErrorType.INVALID_TOKEN, Map.of("token", token));
+			throw new CoreException(ErrorType.AUTHORIZATION_TOKEN_INVALID, Map.of("token", token));
 		}
 	}
 
@@ -75,7 +75,7 @@ public class TokenService {
 			return claims.get("userId", Long.class);
 		} catch (Exception e) {
 			log.error("Invalid token", e);
-			throw new CoreException(ErrorType.INVALID_TOKEN, Map.of("token", token));
+			throw new CoreException(ErrorType.WAITING_TOKEN_INVALID, Map.of("token", token));
 		}
 	}
 }
