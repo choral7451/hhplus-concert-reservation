@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.service.UserQueueService;
 import hhplus.hhplusconcertreservation.interfaces.presetation.user.dto.request.CreateUserQueueRequest;
 import hhplus.hhplusconcertreservation.interfaces.presetation.user.dto.response.UserQueueResponse;
@@ -21,10 +22,17 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
 	private final UserQueueService userQueueService;
+	private final TokenService tokenService;
 
-	@Operation(summary = "토큰 발행 API")
+	@Operation(summary = "인증 토큰 발행 API")
+	@PostMapping("/auth")
+	public String issueAuthToken(@RequestBody CreateUserQueueRequest request) {
+		return tokenService.issueAuthToken(request.getUserId());
+	}
+
+	@Operation(summary = "대기열 토큰 발행 API")
 	@PostMapping("/queue")
-	public String issueToken(@RequestBody CreateUserQueueRequest request) {
+	public String issueWaitingToken(@RequestBody CreateUserQueueRequest request) {
 		return userQueueService.issueToken(request.getUserId());
 	}
 

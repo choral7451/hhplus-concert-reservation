@@ -33,14 +33,14 @@ public class ConcertController {
 	}
 
 	@Operation(summary = "좌석 예약")
-	@PostMapping("/schedules/seats/{seatId}/book")
+	@PostMapping("/waiting/schedules/seats/{seatId}/book")
 	public ConcertBookingResponse bookConcertSeat(@RequestHeader("WaitingToken") String token, @PathVariable Long seatId) {
 		String jwtToken = token.replace("Bearer ", "");
 		return new ConcertBookingResponse(concertService.bookConcertSeat(jwtToken, seatId));
 	}
 
 	@Operation(summary = "공연 일정 조회")
-	@GetMapping("/{concertId}/schedules")
+	@GetMapping("/waiting/{concertId}/schedules")
 	public List<ConcertScheduleResponse> concertSchedules(@RequestHeader("WaitingToken") String token, @PathVariable Long concertId) {
 		String jwtToken = token.replace("Bearer ", "");
 
@@ -55,7 +55,7 @@ public class ConcertController {
 	}
 
 	@Operation(summary = "공연 좌석 조회")
-	@GetMapping("/schedules/{scheduleId}/seats")
+	@GetMapping("/waiting/schedules/{scheduleId}/seats")
 	public List<ConcertSeatResponse> concertScheduleSeats(@RequestHeader("WaitingToken") String token, @PathVariable Long scheduleId) {
 		String jwtToken = token.replace("Bearer ", "");
 
