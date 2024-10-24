@@ -1,8 +1,10 @@
 package hhplus.hhplusconcertreservation.domain.concert.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
-import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 
 public class ConcertBooking {
@@ -50,7 +52,7 @@ public class ConcertBooking {
 
 	public void validateReservationExpiration() {
 		if(this.getExpiresDate().isBefore(LocalDateTime.now())) {
-			throw new ReservationExpired();
+			throw new CoreException(ErrorType.RESERVATION_EXPIRED, Map.of("bookingId", this.getId(), "expiresDate", this.getExpiresDate()));
 		}
 	}
 

@@ -14,12 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class PointServiceUnitTest {
@@ -42,12 +42,11 @@ class PointServiceUnitTest {
 		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
 		Point givenPoint = new Point(1L, givenUser, 1000L, LocalDateTime.now(), LocalDateTime.now());
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
 
 		// when
-		Point point = pointService.scanPoint("테스트토큰");
+		Point point = pointService.scanPoint(givenUserId);
 
 
 		// then
@@ -65,13 +64,12 @@ class PointServiceUnitTest {
 		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
 		Point givenPoint = new Point(1L, givenUser, 0L, LocalDateTime.now(), LocalDateTime.now());
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 		when(pointRepository.save(givenUser)).thenReturn(givenPoint);
 
 		// when
-		Point point = pointService.scanPoint("테스트토큰");
+		Point point = pointService.scanPoint(givenUserId);
 
 
 		// then
@@ -85,12 +83,11 @@ class PointServiceUnitTest {
 		// given
 		Long givenUserId = 1L;
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
-			pointService.scanPoint("테스트토큰");
+		CoreException exception = assertThrows(CoreException.class, () -> {
+			pointService.scanPoint(givenUserId);
 		});
 
 		assertEquals("USER_NOT_FOUND", exception.getMessage());
@@ -108,13 +105,12 @@ class PointServiceUnitTest {
 		Point givenOriginPoint = new Point(1L, givenUser, 0L, LocalDateTime.now(), LocalDateTime.now());
 		Point givenUpdatedPoint = new Point(1L, givenUser, givenOriginPoint.getAmount() + givenChargePoint, LocalDateTime.now(), LocalDateTime.now());
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenOriginPoint));
 		when(pointRepository.update(any())).thenReturn(givenUpdatedPoint);
 
 		// when
-		Point point = pointService.chargePoint("테스트토큰", givenChargePoint);
+		Point point = pointService.chargePoint(givenUserId, givenChargePoint);
 
 		// then
 		assertEquals(point.getId(), givenOriginPoint.getId());
@@ -127,12 +123,11 @@ class PointServiceUnitTest {
 		// given
 		Long givenUserId = 1L;
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
-			pointService.scanPoint("테스트토큰");
+		CoreException exception = assertThrows(CoreException.class, () -> {
+			pointService.scanPoint(givenUserId);
 		});
 
 		assertEquals("USER_NOT_FOUND", exception.getMessage());
@@ -152,14 +147,13 @@ class PointServiceUnitTest {
 		Point givenOriginPoint = new Point(1L, givenUser, 0L, LocalDateTime.now(), LocalDateTime.now());
 		Point givenUpdatedPoint = new Point(1L, givenUser, givenOriginPoint.getAmount() + givenChargePoint, LocalDateTime.now(), LocalDateTime.now());
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 		when(pointRepository.save(any())).thenReturn(givenOriginPoint);
 		when(pointRepository.update(any())).thenReturn(givenUpdatedPoint);
 
 		// when
-		Point point = pointService.chargePoint("테스트토큰", givenChargePoint);
+		Point point = pointService.chargePoint(givenUserId, givenChargePoint);
 
 		// then
 		assertEquals(point.getId(), givenOriginPoint.getId());

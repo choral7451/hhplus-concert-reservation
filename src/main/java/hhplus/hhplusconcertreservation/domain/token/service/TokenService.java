@@ -1,13 +1,15 @@
 package hhplus.hhplusconcertreservation.domain.token.service;
 
 import java.util.Date;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import hhplus.hhplusconcertreservation.domain.token.exception.InvalidToken;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -56,7 +58,7 @@ public class TokenService {
 			return claims.get("userId", Long.class);
 		} catch (Exception e) {
 			log.error("Invalid token", e);
-			throw new InvalidToken();
+			throw new CoreException(ErrorType.AUTHORIZATION_TOKEN_INVALID, Map.of("token", token));
 		}
 	}
 
@@ -73,7 +75,7 @@ public class TokenService {
 			return claims.get("userId", Long.class);
 		} catch (Exception e) {
 			log.error("Invalid token", e);
-			throw new InvalidToken();
+			throw new CoreException(ErrorType.WAITING_TOKEN_INVALID, Map.of("token", token));
 		}
 	}
 }

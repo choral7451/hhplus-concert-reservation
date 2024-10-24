@@ -1,4 +1,4 @@
-package hhplus.hhplusconcertreservation.interfaces.config;
+package hhplus.hhplusconcertreservation.common.config;
 
 import java.util.ArrayList;
 import java.util.List;

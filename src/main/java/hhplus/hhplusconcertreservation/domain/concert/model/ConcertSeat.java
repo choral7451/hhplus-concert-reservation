@@ -1,8 +1,10 @@
 package hhplus.hhplusconcertreservation.domain.concert.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
-import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 
 public class ConcertSeat {
 	private Long id;
@@ -34,7 +36,8 @@ public class ConcertSeat {
 
 	//validate
 	public void validateSeatPayment() {
-		if(this.getPaid()) throw new AlreadyPaidSeat();
+		if(this.getPaid())
+			throw new CoreException(ErrorType.ALREADY_PAID_SEAT, Map.of("seat", this.getId()));
 	}
 
 	public Long getId() {

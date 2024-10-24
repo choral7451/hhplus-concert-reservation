@@ -1,17 +1,13 @@
 package hhplus.hhplusconcertreservation.domain.concert.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyBookedSeat;
-import hhplus.hhplusconcertreservation.domain.concert.exception.AlreadyPaidSeat;
-import hhplus.hhplusconcertreservation.domain.concert.exception.ConcertBookingNotFound;
-import hhplus.hhplusconcertreservation.domain.concert.exception.ReservationExpired;
-import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSchedule;
-import hhplus.hhplusconcertreservation.domain.concert.exception.UnableToRetrieveConcertSeat;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertBooking;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertPayment;
 import hhplus.hhplusconcertreservation.domain.concert.model.ConcertSchedule;
@@ -22,13 +18,10 @@ import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSchedule
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
-import hhplus.hhplusconcertreservation.domain.point.service.exception.InsufficientPoints;
-import hhplus.hhplusconcertreservation.domain.point.service.exception.PointNotFound;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -45,12 +38,10 @@ public class ConcertService {
 	private final PointRepository pointRepository;
 
 	@Transactional
-	public ConcertPayment pay(String token, Long bookingId) {
-		Long userId = tokenService.getUserIdByAuthToken(token);
-
-		Point point = pointRepository.findByUserId(userId).orElseThrow(PointNotFound::new);
+	public ConcertPayment pay(Long userId, Long bookingId) {
+		Point point = pointRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.POINT_NOT_FOUND, Map.of("userId", userId)));
 		ConcertBooking concertBooking = concertBookingRepository.findByIdAndUserId(bookingId, userId)
-			.orElseThrow(ConcertBookingNotFound::new);
+			.orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND_CONCERT_BOOKING, Map.of("bookingId", bookingId, "userId", userId)));
 
 		point.validateSufficientPoints(concertBooking.getPrice());
 		concertBooking.validateReservationExpiration();
@@ -69,14 +60,16 @@ public class ConcertService {
 	}
 
 	@Transactional
-	public ConcertBooking bookConcertSeat(String token, Long seatId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
-		User user = userRepository.findByUserId(userId).orElseThrow(UserNotFound::new);
+	public ConcertBooking bookConcertSeat(Long userId, Long seatId) {
+		User user = userRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
+
 		ConcertSeat seat = concertSeatRepository.findByIdWithLock(seatId);
 		seat.validateSeatPayment();
 
 		Optional<ConcertBooking> alreadyBooked = concertBookingRepository.findBookedSeatBySeatId(seatId);
-		if(alreadyBooked.isPresent()) throw new AlreadyBookedSeat();
+		if(alreadyBooked.isPresent()) {
+			throw new CoreException(ErrorType.ALREADY_BOOKED_SEAT, Map.of("seatId", seatId, "bookingId", alreadyBooked.get().getId()));
+		}
 
 		ConcertBooking concertBooking = new ConcertBooking(user, seat);
 		concertBookingRepository.save(concertBooking);
@@ -84,16 +77,16 @@ public class ConcertService {
 		return concertBooking;
 	}
 
-	public List<ConcertSchedule> scanAllBookableConcertSchedules(String token, Long concertId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
-		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(UnableToRetrieveConcertSchedule::new);
+	public List<ConcertSchedule> scanAllBookableConcertSchedules(Long userId, Long concertId) {
+		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() ->
+			new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE, Map.of("userId", userId))
+		);
 
 		return concertScheduleRepository.findAllBookableSchedulesByConcertId(concertId);
 	}
 
-	public List<ConcertSeat> scanAllSeats(String token, Long concertScheduleId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
-		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(UnableToRetrieveConcertSeat::new);
+	public List<ConcertSeat> scanAllSeats(Long userId, Long concertScheduleId) {
+		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SEAT, Map.of("userId", userId)));
 
 		return concertSeatRepository.findAllByConcertScheduleId(concertScheduleId);
 	}

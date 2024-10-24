@@ -1,16 +1,16 @@
 package hhplus.hhplusconcertreservation.domain.user.service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
-import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserQueueNotFound;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -26,7 +26,7 @@ public class UserQueueService {
 
 	public String issueToken(Long userId) {
 		userRepository.findByUserId(userId)
-			.orElseThrow(UserNotFound::new);
+			.orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
 
 		UserQueue userQueue = userQueueRepository.findByUserId(userId)
 			.orElseGet(() -> userQueueRepository.save(userId, tokenService.issueWaitingToken(userId)));
@@ -34,10 +34,8 @@ public class UserQueueService {
 		return userQueue.getToken();
 	}
 
-	public UserQueue scanUserQueue(String jwtToken) {
-		Long userId = tokenService.getUserIdByWaitingToken(jwtToken);
-
-		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(UserQueueNotFound::new);
+	public UserQueue scanUserQueue(Long userId) {
+		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_QUEUE_NOT_FOUND, Map.of("userId", userId)));
 
 		if (userQueue.isWaiting()) {
 			int currentOrder = userQueueRepository.countCurrentOrderByUserId(userId);

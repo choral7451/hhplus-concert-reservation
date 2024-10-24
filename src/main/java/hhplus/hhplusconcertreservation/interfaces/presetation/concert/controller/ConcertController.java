@@ -16,6 +16,7 @@ import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.respon
 import hhplus.hhplusconcertreservation.interfaces.presetation.concert.dto.response.ConcertSeatResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,24 +28,23 @@ public class ConcertController {
 
 	@Operation(summary = "예약 결제")
 	@PostMapping("/schedules/seats/bookings/{bookingId}/pay")
-	public ConcertPaymentResponse pay(@RequestHeader("Authorization") String token, @PathVariable Long bookingId) {
-		String jwtToken = token.replace("Bearer ", "");
-		return new ConcertPaymentResponse(concertService.pay(jwtToken, bookingId));
+	public ConcertPaymentResponse pay(HttpServletRequest request, @PathVariable Long bookingId) {
+		Long userId = (Long) request.getAttribute("userId");
+		return new ConcertPaymentResponse(concertService.pay(userId, bookingId));
 	}
 
 	@Operation(summary = "좌석 예약")
-	@PostMapping("/schedules/seats/{seatId}/book")
-	public ConcertBookingResponse bookConcertSeat(@RequestHeader("WaitingToken") String token, @PathVariable Long seatId) {
-		String jwtToken = token.replace("Bearer ", "");
-		return new ConcertBookingResponse(concertService.bookConcertSeat(jwtToken, seatId));
+	@PostMapping("/waiting/schedules/seats/{seatId}/book")
+	public ConcertBookingResponse bookConcertSeat(HttpServletRequest request, @PathVariable Long seatId) {
+		Long userId = (Long) request.getAttribute("userId");
+		return new ConcertBookingResponse(concertService.bookConcertSeat(userId, seatId));
 	}
 
 	@Operation(summary = "공연 일정 조회")
-	@GetMapping("/{concertId}/schedules")
-	public List<ConcertScheduleResponse> concertSchedules(@RequestHeader("WaitingToken") String token, @PathVariable Long concertId) {
-		String jwtToken = token.replace("Bearer ", "");
-
-		return concertService.scanAllBookableConcertSchedules(jwtToken, concertId)
+	@GetMapping("/waiting/{concertId}/schedules")
+	public List<ConcertScheduleResponse> concertSchedules(HttpServletRequest request, @PathVariable Long concertId) {
+		Long userId = (Long) request.getAttribute("userId");
+		return concertService.scanAllBookableConcertSchedules(userId, concertId)
 			.stream().map(concertSchedule -> new ConcertScheduleResponse(
 				concertSchedule.getId(),
 				concertSchedule.getConcert(),
@@ -55,11 +55,10 @@ public class ConcertController {
 	}
 
 	@Operation(summary = "공연 좌석 조회")
-	@GetMapping("/schedules/{scheduleId}/seats")
-	public List<ConcertSeatResponse> concertScheduleSeats(@RequestHeader("WaitingToken") String token, @PathVariable Long scheduleId) {
-		String jwtToken = token.replace("Bearer ", "");
-
-		return concertService.scanAllSeats(jwtToken, scheduleId)
+	@GetMapping("/waiting/schedules/{scheduleId}/seats")
+	public List<ConcertSeatResponse> concertScheduleSeats(HttpServletRequest request, @PathVariable Long scheduleId) {
+		Long userId = (Long) request.getAttribute("userId");
+		return concertService.scanAllSeats(userId, scheduleId)
 			.stream().map(ConcertSeatResponse::new).toList();
 	}
 }

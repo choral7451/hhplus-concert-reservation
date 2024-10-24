@@ -1,8 +1,10 @@
 package hhplus.hhplusconcertreservation.domain.point.model;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
-import hhplus.hhplusconcertreservation.domain.point.service.exception.InsufficientPoints;
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
+import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 
 public class Point {
@@ -34,7 +36,7 @@ public class Point {
 	// validate
 	public void validateSufficientPoints(Integer amount) {
 		if(amount > this.amount) {
-			throw new InsufficientPoints();
+			throw new CoreException(ErrorType.INSUFFICIENT_POINTS, Map.of("point", this.amount, "amount", amount));
 		}
 	}
 

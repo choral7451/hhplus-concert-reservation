@@ -12,6 +12,7 @@ import hhplus.hhplusconcertreservation.interfaces.presetation.point.dto.request.
 import hhplus.hhplusconcertreservation.interfaces.presetation.point.dto.response.PointResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -23,22 +24,15 @@ public class PointController {
 
 	@Operation(summary = "포인트 조회")
 	@GetMapping("/{userId}")
-	public PointResponse scanPoint(
-		@RequestHeader("Authorization") String token
-	) {
-		String jwtToken = token.replace("Bearer ", "");
-
-		return new PointResponse(pointService.scanPoint(jwtToken));
+	public PointResponse scanPoint(HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
+		return new PointResponse(pointService.scanPoint(userId));
 	}
 
 	@Operation(summary = "포인트 충전")
 	@PatchMapping("/{userId}/charge")
-	public PointResponse chargePoint(
-		@RequestHeader("Authorization") String token,
-		@RequestBody() ChargePointRequest request
-	) {
-		String jwtToken = token.replace("Bearer ", "");
-
-		return new PointResponse(pointService.chargePoint(jwtToken, request.getAmount()));
+	public PointResponse chargePoint(HttpServletRequest request, @RequestBody() ChargePointRequest body) {
+		Long userId = (Long) request.getAttribute("userId");
+		return new PointResponse(pointService.chargePoint(userId, body.getAmount()));
 	}
 }

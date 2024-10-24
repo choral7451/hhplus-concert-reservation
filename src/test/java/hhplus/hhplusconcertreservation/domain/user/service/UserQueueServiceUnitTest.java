@@ -13,13 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserNotFound;
-import hhplus.hhplusconcertreservation.domain.user.service.exception.UserQueueNotFound;
 
 @ExtendWith(MockitoExtension.class)
 class UserQueueServiceUnitTest {
@@ -77,7 +76,7 @@ class UserQueueServiceUnitTest {
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserNotFound exception = assertThrows(UserNotFound.class, () -> {
+		CoreException exception = assertThrows(CoreException.class, () -> {
 			userQueueService.issueToken(1L);
 		});
 
@@ -96,12 +95,11 @@ class UserQueueServiceUnitTest {
 		int givenOrder = 1;
 		UserQueue givenUserQueue = new UserQueue(givenUserId, givenToken);
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(userQueueRepository.countCurrentOrderByUserId(anyLong())).thenReturn(givenOrder);
 
 		// when
-		UserQueue userQueue = userQueueService.scanUserQueue(givenToken);
+		UserQueue userQueue = userQueueService.scanUserQueue(givenUserId);
 
 		assertEquals(givenUserQueue.getToken(), userQueue.getToken());
 		assertEquals(givenUserQueue.getUserId(), userQueue.getUserId());
@@ -113,15 +111,12 @@ class UserQueueServiceUnitTest {
 	public void 유저가_대기열에_포함되어있지_않습니다() {
 		// given
 		Long givenUserId = 1L;
-		String givenToken = "testToken";
-		int givenOrder = 1;
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
-		UserQueueNotFound exception = assertThrows(UserQueueNotFound.class, () -> {
-			userQueueService.scanUserQueue(givenToken);
+		CoreException exception = assertThrows(CoreException.class, () -> {
+			userQueueService.scanUserQueue(givenUserId);
 		});
 
 		assertEquals("USER_QUEUE_NOT_FOUND", exception.getMessage());
