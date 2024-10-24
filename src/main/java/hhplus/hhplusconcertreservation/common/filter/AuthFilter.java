@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.interfaces.presetation.exception.ErrorResponse;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -42,10 +43,14 @@ public class AuthFilter implements Filter {
 
 		SecretKey key = Keys.hmacShaKeyFor(authTokenSecretKey.getBytes());
 
-		Jwts.parserBuilder()
-			.setSigningKey(key)
-			.build()
-			.parseClaimsJws(token);
+			Claims claims = Jwts.parserBuilder()
+				.setSigningKey(key)
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
+
+			Long userId = claims.get("userId", Long.class);
+			httpRequest.setAttribute("userId", userId);
 
 		chain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {

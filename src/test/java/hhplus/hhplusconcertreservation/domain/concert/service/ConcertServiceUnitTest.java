@@ -79,12 +79,11 @@ class ConcertServiceUnitTest {
 				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now())
 			);
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(concertScheduleRepository.findAllBookableSchedulesByConcertId(anyLong())).thenReturn(givenConcertSchedules);
 
 		// when
-		List<ConcertSchedule> concertSchedules = concertService.scanAllBookableConcertSchedules(givenJwtToken, givenUserId);
+		List<ConcertSchedule> concertSchedules = concertService.scanAllBookableConcertSchedules(givenUserId, givenUserId);
 
 		// then
 		assertEquals(3, concertSchedules.size());
@@ -107,14 +106,12 @@ class ConcertServiceUnitTest {
 	public void 권한이_없는_유저_공연_일정_전체_조회() {
 		// given
 		Long givenUserId = 1L;
-		String givenJwtToken = "testToken";
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.scanAllBookableConcertSchedules(givenJwtToken, givenUserId);
+			concertService.scanAllBookableConcertSchedules(givenUserId, givenUserId);
 		});
 
 		assertEquals("UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE", exception.getMessage());
@@ -139,12 +136,11 @@ class ConcertServiceUnitTest {
 			new ConcertSeat(3L, givenConcert, givenConcertSchedule, 3, 1000, false, LocalDateTime.now(), LocalDateTime.now())
 		);
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(concertSeatRepository.findAllByConcertScheduleId(anyLong())).thenReturn(givenConcertSeats);
 
 		// when
-		List<ConcertSeat> concertSeats = concertService.scanAllSeats(givenJwtToken, givenConcertSchedule.getId());
+		List<ConcertSeat> concertSeats = concertService.scanAllSeats(givenUserId, givenConcertSchedule.getId());
 
 		// then
 		assertEquals(3, concertSeats.size());
@@ -168,14 +164,12 @@ class ConcertServiceUnitTest {
 	public void 권한이_없는_유저_좌석_전체_조회() {
 		// given
 		Long givenUserId = 1L;
-		String givenJwtToken = "testToken";
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.scanAllSeats(givenJwtToken, 1L);
+			concertService.scanAllSeats(givenUserId, 1L);
 		});
 
 		assertEquals("UNABLE_TO_RETRIEVE_CONCERT_SEAT", exception.getMessage());
@@ -198,14 +192,13 @@ class ConcertServiceUnitTest {
 			LocalDateTime.now());
 		ConcertBooking givenConcertBooking = new ConcertBooking(givenUser, givenSeat);
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
 		when(concertBookingRepository.findBookedSeatBySeatId(any())).thenReturn(Optional.empty());
 		when(concertBookingRepository.save(any())).thenReturn(givenConcertBooking);
 
 		// when
-		ConcertBooking concertBooking = concertService.bookConcertSeat("테스트토큰", givenSeatId);
+		ConcertBooking concertBooking = concertService.bookConcertSeat(givenUserId, givenSeatId);
 
 		// then
 		assertEquals(concertBooking.getId(), givenConcertBooking.getId());
@@ -222,12 +215,11 @@ class ConcertServiceUnitTest {
 		Long givenUserId = 1L;
 		Long givenSeatId = 1L;
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+			concertService.bookConcertSeat(givenUserId, givenSeatId);
 		});
 
 		assertEquals("USER_NOT_FOUND", exception.getMessage());
@@ -252,13 +244,12 @@ class ConcertServiceUnitTest {
 		ConcertSeat givenSeat = new ConcertSeat(givenSeatId, givenConcert, givenConcertSchedule, 1, 1000, true, LocalDateTime.now(),
 			LocalDateTime.now());
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+			concertService.bookConcertSeat(givenUserId, givenSeatId);
 		});
 
 		assertEquals("ALREADY_PAID_SEAT", exception.getMessage());
@@ -282,14 +273,13 @@ class ConcertServiceUnitTest {
 			LocalDateTime.now());
 		ConcertBooking givenConcertBooking = new ConcertBooking(1L, givenUser, givenConcert, givenConcertSchedule,givenSeat, 1000, false, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now()  );
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
 		when(concertSeatRepository.findByIdWithLock(anyLong())).thenReturn(givenSeat);
 		when(concertBookingRepository.findBookedSeatBySeatId(any())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.bookConcertSeat("테스트토큰", givenSeatId);
+			concertService.bookConcertSeat(givenUserId, givenSeatId);
 		});
 
 		assertEquals("ALREADY_BOOKED_SEAT", exception.getMessage());
@@ -325,13 +315,12 @@ class ConcertServiceUnitTest {
 		);
 		ConcertPayment givenConcertPayment = new ConcertPayment(givenConcertBooking);
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
 		when(concertPaymentRepository.save(any())).thenReturn(givenConcertPayment);
 
 		// when
-		ConcertPayment concertBooking = concertService.pay("테스트토큰", givenBookingId);
+		ConcertPayment concertBooking = concertService.pay(givenUserId, givenBookingId);
 
 		// then
 		assertEquals(concertBooking.getId(), givenConcertPayment.getId());
@@ -348,12 +337,11 @@ class ConcertServiceUnitTest {
 		Long givenUserId = 1L;
 		Long givenBookingId = 1L;
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.pay("테스트토큰", givenBookingId);
+			concertService.pay(givenUserId, givenBookingId);
 		});
 
 		assertEquals("POINT_NOT_FOUND", exception.getMessage());
@@ -371,13 +359,12 @@ class ConcertServiceUnitTest {
 		User givenUser = new User(givenUserId, "테스트", LocalDateTime.now(), LocalDateTime.now());
 		Point givenPoint = new Point(1L, givenUser, 1000L, LocalDateTime.now(), LocalDateTime.now());
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.pay("테스트토큰", givenBookingId);
+			concertService.pay(givenUserId, givenBookingId);
 		});
 
 		assertEquals("NOT_FOUND_CONCERT_BOOKING", exception.getMessage());
@@ -412,13 +399,12 @@ class ConcertServiceUnitTest {
 			LocalDateTime.now()
 		);
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.pay("테스트토큰", givenBookingId);
+			concertService.pay(givenUserId, givenBookingId);
 		});
 
 		assertEquals("INSUFFICIENT_POINTS", exception.getMessage());
@@ -453,13 +439,12 @@ class ConcertServiceUnitTest {
 			LocalDateTime.now()
 		);
 
-		when(tokenService.getUserIdByAuthToken(anyString())).thenReturn(givenUserId);
 		when(pointRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenPoint));
 		when(concertBookingRepository.findByIdAndUserId(anyLong(), anyLong())).thenReturn(Optional.of(givenConcertBooking));
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			concertService.pay("테스트토큰", givenBookingId);
+			concertService.pay(givenUserId, givenBookingId);
 		});
 
 		assertEquals("RESERVATION_EXPIRED", exception.getMessage());

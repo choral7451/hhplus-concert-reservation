@@ -95,12 +95,11 @@ class UserQueueServiceUnitTest {
 		int givenOrder = 1;
 		UserQueue givenUserQueue = new UserQueue(givenUserId, givenToken);
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
 		when(userQueueRepository.countCurrentOrderByUserId(anyLong())).thenReturn(givenOrder);
 
 		// when
-		UserQueue userQueue = userQueueService.scanUserQueue(givenToken);
+		UserQueue userQueue = userQueueService.scanUserQueue(givenUserId);
 
 		assertEquals(givenUserQueue.getToken(), userQueue.getToken());
 		assertEquals(givenUserQueue.getUserId(), userQueue.getUserId());
@@ -112,15 +111,12 @@ class UserQueueServiceUnitTest {
 	public void 유저가_대기열에_포함되어있지_않습니다() {
 		// given
 		Long givenUserId = 1L;
-		String givenToken = "testToken";
-		int givenOrder = 1;
 
-		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userQueueRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
-			userQueueService.scanUserQueue(givenToken);
+			userQueueService.scanUserQueue(givenUserId);
 		});
 
 		assertEquals("USER_QUEUE_NOT_FOUND", exception.getMessage());

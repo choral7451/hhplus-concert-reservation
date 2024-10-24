@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import hhplus.hhplusconcertreservation.domain.common.exception.ErrorType;
 import hhplus.hhplusconcertreservation.interfaces.presetation.exception.ErrorResponse;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.Filter;
@@ -41,10 +42,14 @@ public class WaitingQueueFilter implements Filter {
 
 			SecretKey key = Keys.hmacShaKeyFor(waitingTokenSecretKey.getBytes());
 
-			Jwts.parserBuilder()
+			Claims claims = Jwts.parserBuilder()
 				.setSigningKey(key)
 				.build()
-				.parseClaimsJws(token);
+				.parseClaimsJws(token)
+				.getBody();
+
+			Long userId = claims.get("userId", Long.class);
+			httpRequest.setAttribute("userId", userId);
 
 			chain.doFilter(request, response);
 		} catch (Exception e) {

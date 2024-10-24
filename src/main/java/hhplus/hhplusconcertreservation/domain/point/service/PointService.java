@@ -21,17 +21,13 @@ public class PointService {
 	private final UserRepository userRepository;
 	private final TokenService tokenService;
 
-	public Point scanPoint(String token) {
-		Long userId = tokenService.getUserIdByAuthToken(token);
-
+	public Point scanPoint(Long userId) {
 		User user = userRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
 		return pointRepository.findByUserId(userId).orElseGet(() -> pointRepository.save(user));
 	}
 
 	@Transactional
-	public Point chargePoint(String token, Long amount) {
-		Long userId = tokenService.getUserIdByAuthToken(token);
-
+	public Point chargePoint(Long userId, Long amount) {
 		User user = userRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
 		Point point = pointRepository.findByUserId(userId).
 			orElseGet(() -> pointRepository.save(user));

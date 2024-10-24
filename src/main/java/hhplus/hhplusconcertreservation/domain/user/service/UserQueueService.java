@@ -34,9 +34,7 @@ public class UserQueueService {
 		return userQueue.getToken();
 	}
 
-	public UserQueue scanUserQueue(String jwtToken) {
-		Long userId = tokenService.getUserIdByWaitingToken(jwtToken);
-
+	public UserQueue scanUserQueue(Long userId) {
 		UserQueue userQueue = userQueueRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_QUEUE_NOT_FOUND, Map.of("userId", userId)));
 
 		if (userQueue.isWaiting()) {

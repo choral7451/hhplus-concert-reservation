@@ -38,9 +38,7 @@ public class ConcertService {
 	private final PointRepository pointRepository;
 
 	@Transactional
-	public ConcertPayment pay(String token, Long bookingId) {
-		Long userId = tokenService.getUserIdByAuthToken(token);
-
+	public ConcertPayment pay(Long userId, Long bookingId) {
 		Point point = pointRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.POINT_NOT_FOUND, Map.of("userId", userId)));
 		ConcertBooking concertBooking = concertBookingRepository.findByIdAndUserId(bookingId, userId)
 			.orElseThrow(() -> new CoreException(ErrorType.NOT_FOUND_CONCERT_BOOKING, Map.of("bookingId", bookingId, "userId", userId)));
@@ -62,8 +60,7 @@ public class ConcertService {
 	}
 
 	@Transactional
-	public ConcertBooking bookConcertSeat(String token, Long seatId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
+	public ConcertBooking bookConcertSeat(Long userId, Long seatId) {
 		User user = userRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
 
 		ConcertSeat seat = concertSeatRepository.findByIdWithLock(seatId);
@@ -80,8 +77,7 @@ public class ConcertService {
 		return concertBooking;
 	}
 
-	public List<ConcertSchedule> scanAllBookableConcertSchedules(String token, Long concertId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
+	public List<ConcertSchedule> scanAllBookableConcertSchedules(Long userId, Long concertId) {
 		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() ->
 			new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE, Map.of("userId", userId))
 		);
@@ -89,8 +85,7 @@ public class ConcertService {
 		return concertScheduleRepository.findAllBookableSchedulesByConcertId(concertId);
 	}
 
-	public List<ConcertSeat> scanAllSeats(String token, Long concertScheduleId) {
-		Long userId = tokenService.getUserIdByWaitingToken(token);
+	public List<ConcertSeat> scanAllSeats(Long userId, Long concertScheduleId) {
 		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SEAT, Map.of("userId", userId)));
 
 		return concertSeatRepository.findAllByConcertScheduleId(concertScheduleId);
