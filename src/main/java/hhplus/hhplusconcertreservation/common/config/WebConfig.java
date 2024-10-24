@@ -4,13 +4,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import hhplus.hhplusconcertreservation.common.filter.AuthFilter;
 import hhplus.hhplusconcertreservation.common.filter.WaitingQueueFilter;
+import hhplus.hhplusconcertreservation.common.interceptor.LogInterceptor;
 import jakarta.servlet.Filter;
 
 @Configuration
-public class WebConfig {
+public class WebConfig implements WebMvcConfigurer {
 	@Value("${variables.authTokenSecretKey}")
 	private String authTokenSecretKey;
 
@@ -37,5 +40,12 @@ public class WebConfig {
 		filterRegistrationBean.addUrlPatterns("/concerts/waiting/*");
 
 		return filterRegistrationBean;
+	}
+
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new LogInterceptor())
+			.order(3)
+			.addPathPatterns("/**");
 	}
 }
