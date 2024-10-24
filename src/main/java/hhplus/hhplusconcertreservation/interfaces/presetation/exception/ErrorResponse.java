@@ -1,4 +1,4 @@
-package hhplus.hhplusconcertreservation.interfaces.common.dto;
+package hhplus.hhplusconcertreservation.interfaces.presetation.exception;
 
 import hhplus.hhplusconcertreservation.domain.common.exception.ErrorCode;
 
