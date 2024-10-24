@@ -60,7 +60,7 @@ class TokenServiceUnitTest {
 		});
 
 		// then
-		assertEquals("INVALID_TOKEN", exception.getMessage());
+		assertEquals("WAITING_TOKEN_INVALID", exception.getMessage());
 	}
 
 	@Test
@@ -95,6 +95,6 @@ class TokenServiceUnitTest {
 		});
 
 		// then
-		assertEquals("INVALID_TOKEN", exception.getMessage());
+		assertEquals("WAITING_TOKEN_INVALID", exception.getMessage());
 	}
 }
