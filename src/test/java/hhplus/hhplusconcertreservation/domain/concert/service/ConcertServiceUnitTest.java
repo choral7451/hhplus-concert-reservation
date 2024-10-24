@@ -280,7 +280,7 @@ class ConcertServiceUnitTest {
 				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now());
 		ConcertSeat givenSeat = new ConcertSeat(givenSeatId, givenConcert, givenConcertSchedule, 1, 1000, false, LocalDateTime.now(),
 			LocalDateTime.now());
-		ConcertBooking givenConcertBooking = new ConcertBooking(givenUser, givenSeat);
+		ConcertBooking givenConcertBooking = new ConcertBooking(1L, givenUser, givenConcert, givenConcertSchedule,givenSeat, 1000, false, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now()  );
 
 		when(tokenService.getUserIdByWaitingToken(anyString())).thenReturn(givenUserId);
 		when(userRepository.findByUserId(anyLong())).thenReturn(Optional.of(givenUser));
