@@ -1,21 +1,31 @@
 spring:
+  profiles:
+    active: local
+
   application:
     name: clean-architecture
 
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: 1234
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
-    database: postgresql
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: create
     properties:
       hibernate:
-        show_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+        show_sql: false
+
 
   springdoc:
     api-docs:
@@ -28,3 +38,5 @@ spring:
 variables:
   waitingTokenSecretKey: "mySuperSecretKeyForJwtSigningWhichIsLongEnough1234"
   authTokenSecretKey: "authMySuperSecretKeyForJwtSigningWhichIsLongEnough"
+
+
