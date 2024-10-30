@@ -39,20 +39,20 @@ public class AuthFilter implements Filter {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		String authorizationHeader = httpRequest.getHeader("Authorization");
 		try {
-		String token = authorizationHeader.substring(7);
+			String token = authorizationHeader.substring(7);
 
-		SecretKey key = Keys.hmacShaKeyFor(authTokenSecretKey.getBytes());
+			SecretKey key = Keys.hmacShaKeyFor(authTokenSecretKey.getBytes());
 
-			Claims claims = Jwts.parserBuilder()
-				.setSigningKey(key)
-				.build()
-				.parseClaimsJws(token)
-				.getBody();
+				Claims claims = Jwts.parserBuilder()
+					.setSigningKey(key)
+					.build()
+					.parseClaimsJws(token)
+					.getBody();
 
-			Long userId = claims.get("userId", Long.class);
-			httpRequest.setAttribute("userId", userId);
+				Long userId = claims.get("userId", Long.class);
+				httpRequest.setAttribute("userId", userId);
 
-		chain.doFilter(request, response);
+			chain.doFilter(request, response);
 		} catch (ExpiredJwtException e) {
 			sendErrorResponse(httpResponse, ErrorType.AUTHORIZATION_TOKEN_EXPIRED);
 		} catch (Exception e) {

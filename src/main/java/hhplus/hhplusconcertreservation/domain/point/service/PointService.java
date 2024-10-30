@@ -29,7 +29,7 @@ public class PointService {
 	@Transactional
 	public Point chargePoint(Long userId, Long amount) {
 		User user = userRepository.findByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.USER_NOT_FOUND, Map.of("userId", userId)));
-		Point point = pointRepository.findByUserId(userId).
+		Point point = pointRepository.findByUserIdWithLock(userId).
 			orElseGet(() -> pointRepository.save(user));
 		point.charge(amount);
 
