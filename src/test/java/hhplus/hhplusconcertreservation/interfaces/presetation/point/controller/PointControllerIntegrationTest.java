@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -75,9 +76,9 @@ class PointControllerIntegrationTest {
 			.build()
 		);
 
-		int threadCount = 1000;
+		int threadCount = 10;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-		List<Callable<Void>> callables = new ArrayList<>();
+		List<Callable<Boolean>> callables = new ArrayList<>();
 
 		Map<String, Object> requestMap = new HashMap<>();
 		requestMap.put("amount", givenAmount);
@@ -93,27 +94,42 @@ class PointControllerIntegrationTest {
 
 		for (int i = 0; i < threadCount; i++) {
 			callables.add(() -> {
-				mockMvc.perform(patch("/points/" + givenUserId + "/charge")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestBody)
-						.header("Authorization", authToken))
-					.andExpect(status().isOk());
-				return null;
+				try {
+					MvcResult result = mockMvc.perform(patch("/points/" + givenUserId + "/charge")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(requestBody)
+							.header("Authorization", authToken))
+						.andExpect(status().isOk())
+						.andReturn();
+					return result.getResponse().getStatus() == 200;
+				} catch (Exception e) {
+					return false;
+				}
 			});
 		}
 
 		// when
-		List<Future<Void>> futures = executorService.invokeAll(callables);
+		List<Future<Boolean>> futures = executorService.invokeAll(callables);
 		executorService.shutdown();
 
 		// then
-		long expectedTotalAmount = threadCount * givenAmount;
+		long successCount = futures.stream().filter(f -> {
+			try {
+				return f.get();
+			} catch (Exception e) {
+				return false;
+			}
+		}).count();
+		long failureCount = threadCount - successCount;
+
+		assertEquals(1, successCount);
+		assertEquals(9, failureCount);
+
 		Optional<PointEntity> updatedPointOptional = pointJpaRepository.findByUserId(givenUserId);
 
 		assertTrue(updatedPointOptional.isPresent());
 		PointEntity updatedPoint = updatedPointOptional.get();
 
-		assertEquals(expectedTotalAmount , updatedPoint.getAmount());
+		assertEquals(givenAmount, updatedPoint.getAmount());
 	}
-
 }

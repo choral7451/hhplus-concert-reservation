@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +46,10 @@ public class PointEntity {
 	@LastModifiedDate
 	@Column(name = "updated_date", nullable = false)
 	private LocalDateTime updatedDate;
+
+	@Version
+	@Column(name = "version")
+	private Long version = 0L;
 
 	@Builder
 	public PointEntity(Long id, UserEntity user, Long amount, LocalDateTime createdDate, LocalDateTime updatedDate) {
