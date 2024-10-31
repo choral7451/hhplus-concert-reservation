@@ -27,6 +27,7 @@ public class ConcertPaymentMapper {
 			.concert(ConcertMapper.toEntity(domain.getConcert()))
 			.concertSchedule(ConcertScheduleMapper.toEntity(domain.getConcertSchedule()))
 			.concertSeat(ConcertSeatMapper.toEntity(domain.getConcertSeat()))
+			.concertBooking(ConcertBookingMapper.toEntity(domain.getConcertBooking()))
 			.price(domain.getPrice())
 			.createdDate(domain.getCreatedDate())
 			.updatedDate(domain.getUpdatedDate())
