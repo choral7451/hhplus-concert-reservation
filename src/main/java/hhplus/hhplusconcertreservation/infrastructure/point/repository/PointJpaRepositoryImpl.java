@@ -26,6 +26,13 @@ public class PointJpaRepositoryImpl implements PointRepository {
 	}
 
 	@Override
+	public Optional<Point> findByUserIdWithLock(Long userId) {
+		return pointJpaRepository.findByUserIdWithLock(userId).map(
+			PointMapper::toDomain
+		);
+	}
+
+	@Override
 	public Point save(User user) {
 		PointEntity entity = PointEntity.builder()
 			.user(UserMapper.toEntity(user))

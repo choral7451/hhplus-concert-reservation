@@ -23,8 +23,8 @@ public class ConcertPayment {
 		this.concertSeat = concertBooking.getConcertSeat();
 		this.concertBooking = concertBooking;
 		this.price = concertBooking.getPrice();
-		this.createdDate = concertBooking.getCreatedDate();
-		this.updatedDate = concertBooking.getUpdatedDate();
+		this.createdDate = LocalDateTime.now();
+		this.updatedDate = LocalDateTime.now();
 	}
 
 	public ConcertPayment(Long id, User user, Concert concert, ConcertSchedule concertSchedule, ConcertSeat concertSeat,
