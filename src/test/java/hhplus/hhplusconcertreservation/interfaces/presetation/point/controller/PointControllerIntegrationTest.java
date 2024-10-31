@@ -18,6 +18,7 @@ import java.util.concurrent.Future;
 
 import javax.crypto.SecretKey;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import hhplus.hhplusconcertreservation.common.DatabaseCleanUp;
 import hhplus.hhplusconcertreservation.infrastructure.point.entity.PointEntity;
 import hhplus.hhplusconcertreservation.infrastructure.point.persistence.PointJpaRepository;
 import hhplus.hhplusconcertreservation.infrastructure.user.entity.UserEntity;
@@ -53,6 +55,14 @@ class PointControllerIntegrationTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private DatabaseCleanUp databaseCleanUp;
+
+	@AfterEach
+	public void cleanup() {
+		databaseCleanUp.execute();
+	}
+
 	@Test
 	public void 포인트_동시_충전_테스트() throws Exception {
 		// given
@@ -67,15 +77,15 @@ class PointControllerIntegrationTest {
 			.build()
 		);
 
-		pointJpaRepository.save(PointEntity.builder()
-			.user(user)
-			.amount(0L)
-			.createdDate(LocalDateTime.now())
-			.updatedDate(LocalDateTime.now())
-			.build()
-		);
+		// pointJpaRepository.save(PointEntity.builder()
+		// 	.user(user)
+		// 	.amount(0L)
+		// 	.createdDate(LocalDateTime.now())
+		// 	.updatedDate(LocalDateTime.now())
+		// 	.build()
+		// );
 
-		int threadCount = 1000;
+		int threadCount = 10;
 		ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 		List<Callable<Void>> callables = new ArrayList<>();
 

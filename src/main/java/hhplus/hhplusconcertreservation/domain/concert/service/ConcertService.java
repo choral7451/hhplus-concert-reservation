@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConcertService {
-	private final TokenService tokenService;
 	private final ConcertScheduleRepository concertScheduleRepository;
 	private final ConcertSeatRepository concertSeatRepository;
 	private final ConcertBookingRepository concertBookingRepository;

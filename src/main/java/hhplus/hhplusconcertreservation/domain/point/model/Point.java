@@ -14,7 +14,6 @@ public class Point {
 	private final LocalDateTime createdDate;
 	private final LocalDateTime updatedDate;
 
-
 	public Point(Long id, User user, Long amount, LocalDateTime createdDate, LocalDateTime updatedDate) {
 		this.id = id;
 		this.user = user;

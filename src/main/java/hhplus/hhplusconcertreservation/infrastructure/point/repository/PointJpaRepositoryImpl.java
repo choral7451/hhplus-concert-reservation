@@ -8,14 +8,17 @@ import org.springframework.stereotype.Repository;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
+import hhplus.hhplusconcertreservation.infrastructure.common.redis.DistributedLock;
 import hhplus.hhplusconcertreservation.infrastructure.point.entity.PointEntity;
 import hhplus.hhplusconcertreservation.infrastructure.point.mapper.PointMapper;
 import hhplus.hhplusconcertreservation.infrastructure.point.persistence.PointJpaRepository;
 import hhplus.hhplusconcertreservation.infrastructure.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class PointJpaRepositoryImpl implements PointRepository {
 	private final PointJpaRepository pointJpaRepository;
 
@@ -47,6 +50,7 @@ public class PointJpaRepositoryImpl implements PointRepository {
 
 	@Override
 	public Point update(Point point) {
+		log.info("update point: {}", point.getAmount());
 		PointEntity entity = pointJpaRepository.save(PointMapper.toEntity(point));
 		return PointMapper.toDomain(entity);
 	}
