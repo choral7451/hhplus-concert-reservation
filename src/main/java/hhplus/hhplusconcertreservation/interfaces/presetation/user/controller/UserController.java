@@ -3,6 +3,7 @@ package hhplus.hhplusconcertreservation.interfaces.presetation.user.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,9 +40,9 @@ public class UserController {
 
 	@Operation(summary = "대기 상태 조회")
 	@GetMapping("/queue/order")
-	public UserQueueResponse userQueue(HttpServletRequest request) {
+	public UserQueueResponse userQueue(HttpServletRequest request,  @RequestHeader("WaitingToken") String waitingToken) {
 		Long userId = (Long) request.getAttribute("userId");
-		return new UserQueueResponse(userQueueService.scanUserQueue(userId));
+		return new UserQueueResponse(userQueueService.scanUserQueue(userId, waitingToken));
 	}
 }
 

@@ -13,11 +13,6 @@ public class WaitingScheduler {
 	private final UserQueueService userQueueService;
 
 	@Scheduled(cron = "*/10 * * * * *")
-	public void deleteExpiredUserQueuesScheduler(){
-		userQueueService.deleteExpiredUserQueues();
-	}
-
-	@Scheduled(cron = "*/10 * * * * *")
 	public void activeUserQueuesScheduler(){
 		userQueueService.activeUserQueues();
 	}

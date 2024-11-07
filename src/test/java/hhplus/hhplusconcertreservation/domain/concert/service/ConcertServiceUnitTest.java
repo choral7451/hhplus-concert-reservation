@@ -1,7 +1,6 @@
 package hhplus.hhplusconcertreservation.domain.concert.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -26,11 +25,11 @@ import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSchedule
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
+import hhplus.hhplusconcertreservation.domain.token.repository.TokenRepository;
 import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
 import hhplus.hhplusconcertreservation.domain.user.enums.UserQueueStatus;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.model.UserQueue;
-import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,16 +39,13 @@ class ConcertServiceUnitTest {
 	private ConcertService concertService;
 
 	@Mock
-	private TokenService tokenService;
+	private TokenRepository tokenRepository;
 
 	@Mock
 	private ConcertScheduleRepository concertScheduleRepository;
 
 	@Mock
 	private UserRepository userRepository;
-
-	@Mock
-	private UserQueueRepository userQueueRepository;
 
 	@Mock
 	private ConcertSeatRepository concertSeatRepository;
@@ -67,8 +63,6 @@ class ConcertServiceUnitTest {
 	public void 권한이_존재하는_유저_공연_일정_전체_조회() {
 		// given
 		Long givenUserId = 1L;
-		String givenJwtToken = "testToken";
-		UserQueue givenUserQueue = new UserQueue(1L, givenUserId, UserQueueStatus.ACTIVATION, givenJwtToken,  LocalDateTime.now().plusMinutes(5), LocalDateTime.now(), LocalDateTime.now());
 		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
 		List<ConcertSchedule> givenConcertSchedules = List.of(
 			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
@@ -79,7 +73,7 @@ class ConcertServiceUnitTest {
 				LocalDateTime.now().plusDays(2), LocalDateTime.now(), LocalDateTime.now())
 			);
 
-		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
+		when(tokenRepository.hasActiveToken(anyString())).thenReturn(true);
 		when(concertScheduleRepository.findAllBookableSchedulesByConcertId(anyLong())).thenReturn(givenConcertSchedules);
 
 		// when
@@ -107,7 +101,7 @@ class ConcertServiceUnitTest {
 		// given
 		Long givenUserId = 1L;
 
-		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
+		when(tokenRepository.hasActiveToken(anyString())).thenReturn(false);
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
@@ -124,8 +118,6 @@ class ConcertServiceUnitTest {
 	public void 권한이_존재하는_유저_공연_좌석_전체_조회() {
 		// given
 		Long givenUserId = 1L;
-		String givenJwtToken = "testToken";
-		UserQueue givenUserQueue = new UserQueue(1L, givenUserId, UserQueueStatus.ACTIVATION, givenJwtToken,  LocalDateTime.now().plusMinutes(5), LocalDateTime.now(), LocalDateTime.now());
 		Concert givenConcert = new Concert(1L, "테스트_제목", "테스트_설명", LocalDateTime.now(), LocalDateTime.now());
 		ConcertSchedule givenConcertSchedule =
 			new ConcertSchedule(1L, givenConcert, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
@@ -136,7 +128,7 @@ class ConcertServiceUnitTest {
 			new ConcertSeat(3L, givenConcert, givenConcertSchedule, 3, 1000, false, LocalDateTime.now(), LocalDateTime.now())
 		);
 
-		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.of(givenUserQueue));
+		when(tokenRepository.hasActiveToken(anyString())).thenReturn(true);
 		when(concertSeatRepository.findAllByConcertScheduleId(anyLong())).thenReturn(givenConcertSeats);
 
 		// when
@@ -165,14 +157,14 @@ class ConcertServiceUnitTest {
 		// given
 		Long givenUserId = 1L;
 
-		when(userQueueRepository.findActiveUserQueueByUserId(anyLong())).thenReturn(Optional.empty());
+		when(tokenRepository.hasActiveToken(anyString())).thenReturn(false);
 
 		// when
 		CoreException exception = assertThrows(CoreException.class, () -> {
 			concertService.scanAllSeats(givenUserId, 1L);
 		});
 
-		assertEquals("UNABLE_TO_RETRIEVE_CONCERT_SEAT", exception.getMessage());
+		assertEquals("UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE", exception.getMessage());
 
 		// then
 		verify(concertSeatRepository, never()).findAllByConcertScheduleId(anyLong());
