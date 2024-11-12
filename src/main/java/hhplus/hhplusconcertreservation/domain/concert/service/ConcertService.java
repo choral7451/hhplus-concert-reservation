@@ -18,9 +18,8 @@ import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSchedule
 import hhplus.hhplusconcertreservation.domain.concert.repository.ConcertSeatRepository;
 import hhplus.hhplusconcertreservation.domain.point.model.Point;
 import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
-import hhplus.hhplusconcertreservation.domain.token.service.TokenService;
+import hhplus.hhplusconcertreservation.domain.token.repository.TokenRepository;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
-import hhplus.hhplusconcertreservation.domain.user.respository.UserQueueRepository;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,14 +27,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ConcertService {
-	private final TokenService tokenService;
 	private final ConcertScheduleRepository concertScheduleRepository;
 	private final ConcertSeatRepository concertSeatRepository;
 	private final ConcertBookingRepository concertBookingRepository;
 	private final ConcertPaymentRepository concertPaymentRepository;
-	private final UserQueueRepository userQueueRepository;
 	private final UserRepository userRepository;
 	private final PointRepository pointRepository;
+	private final TokenRepository tokenRepository;
 
 	@Transactional
 	public ConcertPayment pay(Long userId, Long bookingId) {
@@ -78,15 +76,19 @@ public class ConcertService {
 	}
 
 	public List<ConcertSchedule> scanAllBookableConcertSchedules(Long userId, Long concertId) {
-		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() ->
-			new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE, Map.of("userId", userId))
-		);
+		Boolean hasActiveToken = tokenRepository.hasActiveToken(userId.toString());
+		if(!hasActiveToken) {
+			throw new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE, Map.of("userId", userId));
+		}
 
 		return concertScheduleRepository.findAllBookableSchedulesByConcertId(concertId);
 	}
 
 	public List<ConcertSeat> scanAllSeats(Long userId, Long concertScheduleId) {
-		userQueueRepository.findActiveUserQueueByUserId(userId).orElseThrow(() -> new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SEAT, Map.of("userId", userId)));
+		Boolean hasActiveToken = tokenRepository.hasActiveToken(userId.toString());
+		if(!hasActiveToken) {
+			throw new CoreException(ErrorType.UNABLE_TO_RETRIEVE_CONCERT_SCHEDULE, Map.of("userId", userId));
+		}
 
 		return concertSeatRepository.findAllByConcertScheduleId(concertScheduleId);
 	}
