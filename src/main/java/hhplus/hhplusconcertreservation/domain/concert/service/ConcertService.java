@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import hhplus.hhplusconcertreservation.domain.common.exception.CoreException;
@@ -21,6 +22,7 @@ import hhplus.hhplusconcertreservation.domain.point.repository.PointRepository;
 import hhplus.hhplusconcertreservation.domain.token.repository.TokenRepository;
 import hhplus.hhplusconcertreservation.domain.user.model.User;
 import hhplus.hhplusconcertreservation.domain.user.respository.UserRepository;
+import hhplus.hhplusconcertreservation.event.SendPaymentEvent;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +36,7 @@ public class ConcertService {
 	private final UserRepository userRepository;
 	private final PointRepository pointRepository;
 	private final TokenRepository tokenRepository;
+	private final ApplicationEventPublisher publisher;
 
 	@Transactional
 	public ConcertPayment pay(Long userId, Long bookingId) {
@@ -53,6 +56,8 @@ public class ConcertService {
 
 		concertBooking.outBox();
 		concertBookingRepository.save(concertBooking);
+
+		publisher.publishEvent(new SendPaymentEvent(concertBooking));
 
 		return concertPaymentRepository.save(new ConcertPayment(concertBooking));
 	}
