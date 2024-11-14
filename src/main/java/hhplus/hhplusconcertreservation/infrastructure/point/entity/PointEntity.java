@@ -14,6 +14,7 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -25,7 +26,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "points")
+@Table(
+	name = "points",
+	indexes = @Index(name = "idx_user_id", columnList = "user_id")
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PointEntity {
 	@Id
